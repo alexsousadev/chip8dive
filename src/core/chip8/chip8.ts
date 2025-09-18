@@ -1,22 +1,39 @@
+import { CPU } from "./CPU";
 import { Display } from "./Display";
 import { Memory } from "./Memory";
 
 export class Chip8 {
+    private cpu: CPU;
     private memory: Memory;
     private display: Display;
 
     constructor() {
         this.memory = new Memory();
         this.display = new Display();
+        this.cpu = new CPU(this.memory, this.display);
     }
 
-    // Debugar a memória
-    showMemory() {
-        return `memoria: ${this.memory.getByte(0x200)}\n`;
+    // debugar a memória
+    debugMemory() {
+        return `memória: ${this.memory.getByte(0x200)}\n`;
     }
 
     loadROM(romContent: Uint8Array) {
         this.memory.loadROMInRAM(romContent as Buffer);
+    }
+
+    start() {
+        this.cpu.run();
+    }
+
+    // Executar uma única instrução
+    step() {
+        this.cpu.step();
+    }
+
+    // Resetar o emulador
+    reset() {
+        this.cpu.reset();
     }
 
     getScreen() {
