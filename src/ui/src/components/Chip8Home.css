@@ -1,0 +1,83 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: 'Courier New', monospace;
+    background-color: #c0c0c0;
+    color: black;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #e0e0e0;
+    padding: 30px;
+    box-shadow: 5px 5px 10px #999;
+}
+
+.chip8-box {
+    background-color: #222;
+    color: #00ff00;
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    border-radius: 0px;
+    border: 2px solid black;
+    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.8);
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.button {
+    padding: 12px 20px;
+    font-size: 2.5vw;
+    max-width: 100%;
+    border: 2px solid #555;
+    border-radius: 0px;
+    background-color: #ddd;
+    cursor: pointer;
+    color: #333;
+    text-align: center;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    box-shadow: 3px 3px 5px #888;
+}
+
+.button:hover {
+    background-color: #eee;
+    color: black;
+    border-color: black;
+}
+
+.play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+    .button {
+        font-size: 4vw;
+        padding: 10px 15px;
+    }
+}
