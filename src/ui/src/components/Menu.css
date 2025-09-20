@@ -1,0 +1,95 @@
+/* Estilização básica para o emulador CHIP-8 */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  color: #00ff00;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+.header p {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  color: #ccc;
+}
+
+.header input[type="file"] {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  border: 2px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.controls button {
+  padding: 10px 20px;
+  font-size: 1em;
+  border: 2px solid #555;
+  border-radius: 4px;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.controls button:hover {
+  background-color: #555;
+}
+
+.screen {
+  border: 3px solid #555;
+  padding: 10px;
+  background-color: #000;
+  border-radius: 8px;
+}
+
+.screen canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .header h1 {
+    font-size: 2em;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .screen canvas {
+    width: 480px !important;
+    height: 240px !important;
+  }
+}

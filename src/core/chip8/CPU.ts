@@ -1,4 +1,4 @@
-import { Disassembler, IDecodedInstruction } from "./Disassembler";
+import { Disassembler, type IDecodedInstruction } from "./Disassembler";
 import { Display } from "./Display";
 import { Memory } from "./Memory";
 
@@ -100,7 +100,7 @@ export class CPU {
 
     execute(instruction: IDecodedInstruction) {
         switch (instruction.name) {
-            case "CLS":
+            case "CLS": 
                 this.display.cleanDisplay();
                 break;
             case "RET":
