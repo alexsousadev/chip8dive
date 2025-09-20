@@ -77,7 +77,18 @@ export class CPU {
 
     // Verificar se é uma instrução de desvio
     private isJumpInstruction(instructionName: string): boolean {
-        return ["JP", "CALL", "RET"].includes(instructionName);
+        return [
+            "JUMP_TO_NNN", 
+            "CALL_SUBROUTINE_NNN", 
+            "RETURN", 
+            "JUMP_TO_V0_PLUS_NNN",
+            "SKIP_IF_VX_EQUALS_KK", 
+            "SKIP_IF_VX_NOT_EQUALS_KK", 
+            "SKIP_IF_VX_EQUALS_VY", 
+            "SKIP_IF_VX_NOT_EQUALS_VY", 
+            "SKIP_IF_KEY_VX_PRESSED", 
+            "SKIP_IF_KEY_VX_NOT_PRESSED"
+        ].includes(instructionName);
     }
 
     run() {
@@ -98,36 +109,147 @@ export class CPU {
         this.display.cleanDisplay();
     }
 
-    execute(instruction: IDecodedInstruction) {
+        execute(instruction: IDecodedInstruction) {
         switch (instruction.name) {
-            case "CLS": 
+            // 0xxx
+            case "SYSTEM_CALL":
+                // Ignorado na maioria dos interpretadores modernos
+                break;
+            case "CLEAR_SCREEN":
                 this.display.cleanDisplay();
                 break;
-            case "RET":
+            case "RETURN":
                 if (this.SP > 0) {
                     this.SP--;
                     this.PC = this.Stack[this.SP];
                 }
                 break;
-            case "JP":
+                
+            // 1nnn
+            case "JUMP_TO_NNN":
                 this.PC = instruction.nnn;
                 break;
-            case "CALL":
-                this.Stack[this.SP] = this.PC;
-                this.SP++;
+                
+            // 2nnn
+            case "CALL_SUBROUTINE_NNN":
+                this.Stack[this.SP++] = this.PC + 2;
                 this.PC = instruction.nnn;
                 break;
-            case "LD_I":
-                this.I = instruction.nnn;
+                
+            // 3xkk
+            case "SKIP_IF_VX_EQUALS_KK":
+                if (this.V[instruction.x] === instruction.kk) {
+                    this.PC += 4;
+                } else {
+                    this.PC += 2;
+                }
                 break;
-            case "LD_VX":
+                
+            // 4xkk
+            case "SKIP_IF_VX_NOT_EQUALS_KK":
+                if (this.V[instruction.x] !== instruction.kk) {
+                    this.PC += 4;
+                } else {
+                    this.PC += 2
+                }
+                break;
+                
+            // 5xy0
+            case "SKIP_IF_VX_EQUALS_VY":
+                if (this.V[instruction.x] === this.V[instruction.y]) {
+                    this.PC += 4;
+                } else {
+                    this.PC += 2; 
+                }
+                break;
+                
+            // 6xkk
+            case "SET_VX_TO_KK":
                 this.V[instruction.x] = instruction.kk;
                 break;
-            case "ADD_VX":
+                
+            // 7xkk
+            case "ADD_KK_TO_VX":
                 this.V[instruction.x] = (this.V[instruction.x] + instruction.kk) & 0xFF;
                 break;
-            case "DRW":
-                console.log("Desenhando na tela");
+                
+            // 8xy0
+            case "SET_VX_TO_VY":
+                this.V[instruction.x] = this.V[instruction.y];
+                break;
+                
+            // 8xy1
+            case "SET_VX_TO_VX_OR_VY":
+                this.V[instruction.x] |= this.V[instruction.y];
+                break;
+                
+            // 8xy2
+            case "SET_VX_TO_VX_AND_VY":
+                this.V[instruction.x] &= this.V[instruction.y];
+                break;
+                
+            // 8xy3
+            case "SET_VX_TO_VX_XOR_VY":
+                this.V[instruction.x] ^= this.V[instruction.y];
+                break;
+                
+            // 8xy4
+            case "ADD_VY_TO_VX_WITH_CARRY":
+                const sum = this.V[instruction.x] + this.V[instruction.y];
+                this.V[0xF] = sum > 255 ? 1 : 0;
+                this.V[instruction.x] = sum & 0xFF;
+                break;
+                
+            // 8xy5
+            case "SUBTRACT_VY_FROM_VX":
+                this.V[0xF] = this.V[instruction.x] > this.V[instruction.y] ? 1 : 0;
+                this.V[instruction.x] = (this.V[instruction.x] - this.V[instruction.y]) & 0xFF;
+                break;
+                
+            // 8xy6
+            case "SHIFT_VX_RIGHT":
+                this.V[0xF] = this.V[instruction.x] & 0x1; // LSB
+                this.V[instruction.x] >>= 1;
+                break;
+                
+            // 8xy7
+            case "SET_VX_TO_VY_MINUS_VX":
+                this.V[0xF] = this.V[instruction.y] > this.V[instruction.x] ? 1 : 0;
+                this.V[instruction.x] = (this.V[instruction.y] - this.V[instruction.x]) & 0xFF;
+                break;
+                
+            // 8xyE
+            case "SHIFT_VX_LEFT":
+                this.V[0xF] = (this.V[instruction.x] & 0x80) >> 7; // MSB
+                this.V[instruction.x] = (this.V[instruction.x] << 1) & 0xFF;
+                break;
+                
+            // 9xy0
+            case "SKIP_IF_VX_NOT_EQUALS_VY":
+                if (this.V[instruction.x] !== this.V[instruction.y]) {
+                    this.PC += 4; 
+                } else {
+                    this.PC += 2; 
+                }
+                break;
+                
+            // Annn
+            case "SET_I_TO_NNN":
+                this.I = instruction.nnn;
+                break;
+                
+            // Bnnn
+            case "JUMP_TO_V0_PLUS_NNN":
+                this.PC = (instruction.nnn + this.V[0]) & 0xFFF;
+                break;
+                
+            // Cxkk
+            case "SET_VX_TO_RANDOM_AND_KK":
+                this.V[instruction.x] = (Math.floor(Math.random() * 256)) & instruction.kk;
+                break;
+                
+            // Dxyn
+            case "DRAW_SPRITE_VX_VY_N":
                 this.V[0xF] = 0; // Zerar flag de colisão
                 
                 const vx = this.V[instruction.x];
@@ -153,6 +275,71 @@ export class CPU {
                     }
                 }
                 break;
+                
+            // Ex9E
+            case "SKIP_IF_KEY_VX_PRESSED":
+                // TODO: Implementar quando teclado for adicionado
+                break;
+                
+            // ExA1
+            case "SKIP_IF_KEY_VX_NOT_PRESSED":
+                // TODO: Implementar quando teclado for adicionado
+                break;
+                
+            // Fx07
+            case "SET_VX_TO_DELAY_TIMER":
+                this.V[instruction.x] = this.delayTimer;
+                break;
+            // Fx0A
+            case "WAIT_FOR_KEY_PRESS":
+                // TODO: Implementar quando teclado for adicionado
+                break;
+                
+            // Fx15
+            case "SET_DELAY_TIMER_TO_VX":
+                this.delayTimer = this.V[instruction.x];
+                break;
+                
+            // Fx18
+            case "SET_SOUND_TIMER_TO_VX":
+                this.soundTimer = this.V[instruction.x];
+                break;
+                
+            // Fx1E
+            case "ADD_VX_TO_I":
+                this.I = (this.I + this.V[instruction.x]) & 0xFFF;
+                break;
+                
+            // Fx29
+            case "SET_I_TO_FONT_VX":
+                // Definir I para localização do sprite do dígito VX
+                this.I = this.V[instruction.x] * 5;
+                break;
+                
+            // Fx33
+            case "STORE_BCD_VX_AT_I":
+                const value = this.V[instruction.x];
+                this.memory.setByte(this.I, Math.floor(value / 100));
+                this.memory.setByte(this.I + 1, Math.floor((value % 100) / 10));
+                this.memory.setByte(this.I + 2, value % 10);
+                break;
+                
+            // Fx55
+            case "STORE_V0_TO_VX_AT_I":
+                // Armazenar registros V0 até VX na memória começando em I
+                for (let i = 0; i <= instruction.x; i++) {
+                    this.memory.setByte(this.I + i, this.V[i]);
+                }
+                break;
+                
+            // Fx65
+            case "LOAD_V0_TO_VX_FROM_I":
+                // Ler registros V0 até VX da memória começando em I
+                for (let i = 0; i <= instruction.x; i++) {
+                    this.V[i] = this.memory.getByte(this.I + i);
+                }
+                break;
+                
             default:
                 console.log(`Instrução não implementada: ${instruction.name}`);
                 break;
