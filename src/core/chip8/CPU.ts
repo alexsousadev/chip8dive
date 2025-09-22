@@ -8,6 +8,8 @@ export class CPU {
     private V: Uint8Array;
     private Stack: Uint16Array;
 
+    private aux_value: number;
+
     private PC: number;
     private I: number;
     private SP: number; // Stack Pointer (Ponteiro da pilha)
@@ -22,6 +24,7 @@ export class CPU {
         this.V = new Uint8Array(16);
         this.Stack = new Uint16Array(16);
         this.display = display;
+        this.aux_value = 0;
 
         this.PC = 0x200;
         this.I = 0;
@@ -108,7 +111,6 @@ export class CPU {
         this.soundTimer = 0;
         this.display.cleanDisplay();
     }
-
         execute(instruction: IDecodedInstruction) {
         switch (instruction.name) {
             // 0xxx
@@ -170,7 +172,7 @@ export class CPU {
                 
             // 7xkk
             case "ADD_KK_TO_VX":
-                this.V[instruction.x] = (this.V[instruction.x] + instruction.kk) & 0xFF;
+                this.V[instruction.x] = (this.V[instruction.x] + instruction.kk)
                 break;
                 
             // 8xy0
@@ -196,32 +198,36 @@ export class CPU {
             // 8xy4
             case "ADD_VY_TO_VX_WITH_CARRY":
                 const sum = this.V[instruction.x] + this.V[instruction.y];
-                this.V[0xF] = sum > 255 ? 1 : 0;
                 this.V[instruction.x] = sum & 0xFF;
+                this.V[0xF] = sum > 255 ? 1 : 0;
                 break;
                 
             // 8xy5
             case "SUBTRACT_VY_FROM_VX":
-                this.V[0xF] = this.V[instruction.x] > this.V[instruction.y] ? 1 : 0;
-                this.V[instruction.x] = (this.V[instruction.x] - this.V[instruction.y]) & 0xFF;
+                this.aux_value = this.V[instruction.x] - this.V[instruction.y];
+                this.V[instruction.x] = this.aux_value & 0xFF;
+                this.V[0xF] = this.aux_value < 0 ? 0 : 1;
                 break;
                 
             // 8xy6
             case "SHIFT_VX_RIGHT":
-                this.V[0xF] = this.V[instruction.x] & 0x1; // LSB
-                this.V[instruction.x] >>= 1;
+                this.aux_value = this.V[instruction.x];
+                this.V[instruction.x] = this.V[instruction.y] >> 1;
+                this.V[0xF] = this.aux_value & 0x1; 
                 break;
                 
             // 8xy7
             case "SET_VX_TO_VY_MINUS_VX":
-                this.V[0xF] = this.V[instruction.y] > this.V[instruction.x] ? 1 : 0;
-                this.V[instruction.x] = (this.V[instruction.y] - this.V[instruction.x]) & 0xFF;
+                this.aux_value = this.V[instruction.y] - this.V[instruction.x];
+                this.V[instruction.x] = this.aux_value & 0xFF;
+                this.V[0xF] = this.aux_value < 0 ? 0 : 1;
                 break;
                 
             // 8xyE
             case "SHIFT_VX_LEFT":
-                this.V[0xF] = (this.V[instruction.x] & 0x80) >> 7; // MSB
-                this.V[instruction.x] = (this.V[instruction.x] << 1) & 0xFF;
+                this.aux_value = this.V[instruction.x];
+                this.V[instruction.x] = (this.aux_value << 1) & 0xFF;
+                this.V[0xF] = (this.aux_value & 0x80) >> 7; 
                 break;
                 
             // 9xy0
