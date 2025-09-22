@@ -20,4 +20,4 @@ Por isso, ele é uma escolha ideal quando falamos em uma introdução acessível
 > É importante deixar claro essa distinção técnica para não haver confusões depois, mas você irá notar que em muitas partes iremos precisar recriar partes do COSMAC VIP, que era o hardware original onde o CHIP-8 funcionava. Isso mostra a conexão entre esses dois mundos...
 
 ---
-## [Visualizando a Estrutura](../2-funcionamento/funcionamento.md)
+## [Visualizando a Estrutura](../2-Arquitetura/Arquitetura.md)
