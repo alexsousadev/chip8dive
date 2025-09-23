@@ -1,16 +1,19 @@
 import { CPU } from "./CPU";
 import { Display } from "./Display";
+import { Keyboard } from "./Keyboard";
 import { Memory } from "./Memory";
 
 export class Chip8 {
     private cpu: CPU;
     private memory: Memory;
     private display: Display;
+    private keyboard: Keyboard;
 
     constructor() {
         this.memory = new Memory();
         this.display = new Display();
-        this.cpu = new CPU(this.memory, this.display);
+        this.keyboard = new Keyboard();
+        this.cpu = new CPU(this.memory, this.display, this.keyboard);
     }
 
     // debugar a memória
@@ -38,5 +41,9 @@ export class Chip8 {
 
     getScreen() {
         return this.display.getDisplay();
+    }
+
+    setKeyState(key: string, value: boolean) {
+        this.keyboard.setKeyState(key, value);
     }
 }

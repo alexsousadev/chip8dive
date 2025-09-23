@@ -42,8 +42,6 @@ export class Memory {
         for (let i = 0; i < romContent.length; i++) {
             this.RAM[0x200 + i] = romContent[i];
         }
-
-        console.log("Conteúdo da RAM após carregar ROM: ", this.RAM.toString());
     }
 
 }

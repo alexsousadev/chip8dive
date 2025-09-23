@@ -47,6 +47,36 @@ const Menu = () => {
   }, [romLoaded, isRunning, chip]);
 
 
+  // Captura as teclas pressionadas/liberadas e envia para o chip8
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      chip.setKeyState(event.key, true);
+    };
+
+    const handleKeyRelease = (event: KeyboardEvent) => {
+      chip.setKeyState(event.key, false);
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener('keyup', handleKeyRelease);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('keyup', handleKeyRelease);
+    };
+  }, [chip]);
+
+  // Atualiza a tela sempre que o chip8 for atualizado de alguma forma
+  useEffect(() => {
+    const updateScreen = () => {
+      const currentScreen = chip.getScreen();
+      setScreenData([...currentScreen]);
+    };
+
+    updateScreen();
+  }, [chip]);
+
+
   // Carrega o arquivo e envia o conteúdo para o chip8
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -66,6 +96,7 @@ const Menu = () => {
       reader.readAsArrayBuffer(file);
     }
   };
+
 
   // Inicia ou para a execução do chip8
   const toggleExecution = () => {

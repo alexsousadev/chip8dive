@@ -1,6 +1,7 @@
 import { Disassembler, type IDecodedInstruction } from "./Disassembler";
 import { Display } from "./Display";
 import { Memory } from "./Memory";
+import { Keyboard } from "./Keyboard";
 
 export class CPU {
     private memory: Memory;
@@ -17,9 +18,11 @@ export class CPU {
     private delayTimer: number; // Delay Timer (Timer de atraso)
     private soundTimer: number; // Sound Timer (Timer de som)
 
+    private keyboard: Keyboard;
+
     private CLOCK_CPU = 1000 / 500 // Clock da CPU (500 Hz)
 
-    constructor(memory: Memory, display: Display) {
+    constructor(memory: Memory, display: Display, keyboard: Keyboard) {
         this.memory = memory;
         this.V = new Uint8Array(16);
         this.Stack = new Uint16Array(16);
@@ -32,6 +35,7 @@ export class CPU {
 
         this.delayTimer = 0;
         this.soundTimer = 0;
+        this.keyboard = keyboard;
         
         this.startTimers();
     }
@@ -52,7 +56,7 @@ export class CPU {
     fetch() {
         const msb = this.memory.getByte(this.PC);
         const lsb = this.memory.getByte(this.PC + 1);
-        console.log(`\n*************\nPC: ${this.PC}, MSB: ${msb.toString(16)}, LSB: ${lsb.toString(16)}\n`);
+        // console.log(`\n*************\nPC: ${this.PC}, MSB: ${msb.toString(16)}, LSB: ${lsb.toString(16)}\n`);
         const opcode = msb << 8 | lsb
         return opcode;
     }
@@ -66,7 +70,7 @@ export class CPU {
         try {
             const opcode = this.fetch();
             const instruction = this.decode(opcode);
-            console.log("\nINSTRUCAO: \n", instruction, "\n*****************\n");
+            //console.log("\nINSTRUCAO: \n", instruction, "\n*****************\n");
             this.execute(instruction);
             
             // Só incrementar PC se a instrução não foi um desvio
@@ -283,13 +287,24 @@ export class CPU {
                 break;
                 
             // Ex9E
-            case "SKIP_IF_KEY_VX_PRESSED":
-                // TODO: Implementar quando teclado for adicionado
+            case "SKIP_IF_KEY_VX_PRESSED":;
+                if (this.keyboard.keyIsPressed(this.V[instruction.x])) {
+                    this.keyboard.setStatusForKeyPress(true);
+                    this.PC += 4;
+                } else {
+                    this.PC += 2;
+                }
                 break;
                 
             // ExA1
             case "SKIP_IF_KEY_VX_NOT_PRESSED":
-                // TODO: Implementar quando teclado for adicionado
+                console.log(`Executing SKIP_IF_KEY_VX_NOT_PRESSED for V[${instruction.x}]`);
+                if (!this.keyboard.keyIsPressed(this.V[instruction.x])) {
+                    console.log(`Key V[${instruction.x}] is not pressed, skipping next instruction`);
+                    this.PC += 4;
+                } else {
+                    this.PC += 2;
+                }
                 break;
                 
             // Fx07
@@ -297,8 +312,11 @@ export class CPU {
                 this.V[instruction.x] = this.delayTimer;
                 break;
             // Fx0A
-            case "WAIT_FOR_KEY_PRESS":
-                // TODO: Implementar quando teclado for adicionado
+            case "WAIT_FOR_KEY_PRESS":    
+                // TODO: Implementar a lógica para esperar pela tecla pressionada
+
+
+
                 break;
                 
             // Fx15
