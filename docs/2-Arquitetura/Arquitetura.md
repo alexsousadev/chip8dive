@@ -110,6 +110,11 @@ Para entender melhor, vamos ver o que significa cada instrução:
 | Fx65 | V0..Vx = memory[I..I+X] | Carrega nos registradores V0 até Vx os valores da memória a partir de I. |
 
 
+---
+Para entender melhor a decodificação as intruções, clique [AQUI](./Decodificacao_opcode.md)
+---
+
+
 ## 3) Teclado
 
 O teclado original do CHIP-8 não se parece com um teclado de computador moderno. Em vez disso, ele é um teclado hexadecimal com 16 teclas em uma grade de 4x4, que vão de 0 a F.
