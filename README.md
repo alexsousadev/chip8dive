@@ -6,6 +6,6 @@
 
 ## Capítulos
 
-- ## [1) - Uma Introdução ao CHIP-8](./docs/1-Introducao/Introducao.md)
-- ## [2) - Visualizando a Estrutura](./docs/2-Arquitetura/Arquitetura.md)
-
+- ## [1) Uma Introdução ao CHIP-8](./docs/1-Introducao/Introducao.md)
+- ## [2) Visualizando a Estrutura](./docs/2-Arquitetura/Arquitetura.md)
+- ## [3) Implementação do Emulador]()

@@ -1,0 +1,1 @@
+Com a arquitetura do emulador já estabelecida, é hora de mergulhar no código e entender como cada instrução do CHIP-8 é traduzida para o TypeScript.
