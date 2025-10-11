@@ -9,7 +9,7 @@ export interface IDecodedInstruction {
 }
 
 // Enum de intruções (baseadas no Cowgod's Chip-8 Technical Reference)
-export const InstructionEnum = {
+const InstructionEnum = {
     "0nnn": "SYSTEM_CALL",
     "00E0": "CLEAR_SCREEN",
     "00EE": "RETURN",

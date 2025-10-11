@@ -20,8 +20,6 @@ export class CPU {
 
     private keyboard: Keyboard;
 
-    private CLOCK_CPU = 1000 / 500 // Clock da CPU (500 Hz)
-
     constructor(memory: Memory, display: Display, keyboard: Keyboard) {
         this.memory = memory;
         this.V = new Uint8Array(16);
@@ -56,7 +54,6 @@ export class CPU {
     fetch() {
         const msb = this.memory.getByte(this.PC);
         const lsb = this.memory.getByte(this.PC + 1);
-        // console.log(`\n*************\nPC: ${this.PC}, MSB: ${msb.toString(16)}, LSB: ${lsb.toString(16)}\n`);
         const opcode = msb << 8 | lsb
         return opcode;
     }
@@ -70,7 +67,6 @@ export class CPU {
         try {
             const opcode = this.fetch();
             const instruction = this.decode(opcode);
-            //console.log("\nINSTRUCAO: \n", instruction, "\n*****************\n");
             this.execute(instruction);
             
             // Só incrementar PC se a instrução não foi um desvio
@@ -94,7 +90,8 @@ export class CPU {
             "SKIP_IF_VX_EQUALS_VY", 
             "SKIP_IF_VX_NOT_EQUALS_VY", 
             "SKIP_IF_KEY_VX_PRESSED", 
-            "SKIP_IF_KEY_VX_NOT_PRESSED"
+            "SKIP_IF_KEY_VX_NOT_PRESSED",
+            "WAIT_FOR_KEY_PRESS"
         ].includes(instructionName);
     }
 
@@ -287,9 +284,8 @@ export class CPU {
                 break;
                 
             // Ex9E
-            case "SKIP_IF_KEY_VX_PRESSED":;
+            case "SKIP_IF_KEY_VX_PRESSED":
                 if (this.keyboard.keyIsPressed(this.V[instruction.x])) {
-                    this.keyboard.setStatusForKeyPress(true);
                     this.PC += 4;
                 } else {
                     this.PC += 2;
@@ -298,9 +294,7 @@ export class CPU {
                 
             // ExA1
             case "SKIP_IF_KEY_VX_NOT_PRESSED":
-                console.log(`Executing SKIP_IF_KEY_VX_NOT_PRESSED for V[${instruction.x}]`);
                 if (!this.keyboard.keyIsPressed(this.V[instruction.x])) {
-                    console.log(`Key V[${instruction.x}] is not pressed, skipping next instruction`);
                     this.PC += 4;
                 } else {
                     this.PC += 2;
@@ -313,10 +307,25 @@ export class CPU {
                 break;
             // Fx0A
             case "WAIT_FOR_KEY_PRESS":    
-                // TODO: Implementar a lógica para esperar pela tecla pressionada
-
-
-
+                let historyOfKeysPressed = this.keyboard.getHistoryOfKeysPressed();
+                
+                // Verificar se há uma tecla no histórico que foi pressionada e solta
+                if (historyOfKeysPressed.length > 0) {
+                    const lastKey = historyOfKeysPressed[historyOfKeysPressed.length - 1];
+                    const keyCode = this.keyboard.getKeyMapping().get(lastKey);
+                    
+                    // Verificar se a tecla completou o ciclo (pressionar e soltar)
+                    if (keyCode !== undefined && this.keyboard.isKeyPressReleaseCycleComplete(lastKey)) {
+                        this.V[instruction.x] = keyCode;
+                        this.keyboard.clearHistory();
+                        this.keyboard.clearKeyPressReleaseCycle(lastKey);
+                        
+                        // Continuar execução
+                        this.PC += 2;
+                    }
+                    // Se a tecla não completou o ciclo, não incrementar PC (fica na mesma instrução)
+                }
+                // Se não há teclas no histórico, não incrementar PC (fica na mesma instrução)
                 break;
                 
             // Fx15
