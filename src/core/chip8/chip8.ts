@@ -46,4 +46,9 @@ export class Chip8 {
     setKeyState(key: string, value: boolean) {
         this.keyboard.setKeyState(key, value);
     }
+
+    // Retomar o contexto de áudio (necessário para navegadores)
+    resumeAudio() {
+        this.cpu.resumeAudio();
+    }
 }

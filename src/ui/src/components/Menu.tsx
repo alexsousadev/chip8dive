@@ -88,6 +88,7 @@ const Menu = () => {
         if (result instanceof ArrayBuffer) {
           const romData = new Uint8Array(result);
           chip.loadROM(romData);
+          chip.resumeAudio(); // Retomar contexto de áudio
           setRomLoaded(true);
           setIsRunning(true);
         }
@@ -100,6 +101,9 @@ const Menu = () => {
 
   // Inicia ou para a execução do chip8
   const toggleExecution = () => {
+    if (!isRunning) {
+      chip.resumeAudio(); // Retomar contexto de áudio ao continuar
+    }
     setIsRunning(!isRunning);
   };
 

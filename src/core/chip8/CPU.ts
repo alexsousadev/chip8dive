@@ -2,6 +2,7 @@ import { Disassembler, type IDecodedInstruction } from "./Disassembler";
 import { Display } from "./Display";
 import { Memory } from "./Memory";
 import { Keyboard } from "./Keyboard";
+import { Audio } from "./Audio";
 
 export class CPU {
     private memory: Memory;
@@ -13,12 +14,13 @@ export class CPU {
 
     private PC: number;
     private I: number;
-    private SP: number; // Stack Pointer (Ponteiro da pilha)
+    private SP: number; // Ponteiro da pilha
 
-    private delayTimer: number; // Delay Timer (Timer de atraso)
-    private soundTimer: number; // Sound Timer (Timer de som)
+    private delayTimer: number; // Timer de atraso
+    private soundTimer: number; // Timer de som
 
     private keyboard: Keyboard;
+    private audio: Audio;
 
     constructor(memory: Memory, display: Display, keyboard: Keyboard) {
         this.memory = memory;
@@ -34,8 +36,14 @@ export class CPU {
         this.delayTimer = 0;
         this.soundTimer = 0;
         this.keyboard = keyboard;
+        this.audio = new Audio();
         
         this.startTimers();
+    }
+
+    // Retomar o áudio (necessário para política de autoplay dos navegadores)
+    public resumeAudio() {
+        this.audio.resume();
     }
 
     // Inicializar a contagem dos timers
@@ -45,8 +53,14 @@ export class CPU {
                 this.delayTimer--;
             }
 
+            // Gerenciar o timer de som com áudio
             if (this.soundTimer > 0) {
+                if (!this.audio.isPlaying()) {
+                    this.audio.startBeep(); // Iniciar beep se ainda não estiver tocando
+                }
                 this.soundTimer--;
+            } else if (this.audio.isPlaying()) {
+                this.audio.stopBeep(); // Parar beep quando o timer chegar a 0
             }
         }, 1000 / 60)
     }
@@ -110,6 +124,7 @@ export class CPU {
         this.Stack.fill(0);
         this.delayTimer = 0;
         this.soundTimer = 0;
+        this.audio.stopBeep(); // Parar qualquer som tocando
         this.display.cleanDisplay();
     }
         execute(instruction: IDecodedInstruction) {
@@ -173,7 +188,7 @@ export class CPU {
                 
             // 7xkk
             case "ADD_KK_TO_VX":
-                this.V[instruction.x] = (this.V[instruction.x] + instruction.kk)
+                this.V[instruction.x] = (this.V[instruction.x] + instruction.kk) & 0xFF;
                 break;
                 
             // 8xy0
@@ -346,7 +361,7 @@ export class CPU {
             // Fx29
             case "SET_I_TO_FONT_VX":
                 // Definir I para localização do sprite do dígito VX
-                this.I = this.V[instruction.x] * 5;
+                this.I = this.V[instruction.x]
                 break;
                 
             // Fx33
