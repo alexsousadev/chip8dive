@@ -17,3 +17,4 @@ Assim, o ideal é iniciar pelos módulos mais simples e autônomos, como a **mem
 
 ### [3.1) Memória](./3-1-memoria/memoria.md)
 ### [3.2) Display](./3-2-display/display.md)
+### [3.3) Disassembler](./3-3-disassembler/disassembler.md)
