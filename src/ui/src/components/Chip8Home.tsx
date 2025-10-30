@@ -6,6 +6,7 @@ export default function Chip8Home() {
     
     return (
        <div className="container">
+       <div style={{ marginTop: '200px' }}></div>
         <div className="chip8-box">
             <h1 className="chip8-title">CHIP-8 Dive</h1>
         </div>

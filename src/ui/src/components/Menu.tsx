@@ -1,53 +1,85 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Chip8 } from "../../../core/chip8/chip8";
 import "./Menu.css";
 
 const Menu = () => {
-  const [romLoaded, setRomLoaded] = useState(false);            // Já carregou o rom?
-  const [screenData, setScreenData] = useState<number[][]>([]); // Dados da tela
-  const [isRunning, setIsRunning] = useState(false);            // Está rodando?
+  const [romLoaded, setRomLoaded] = useState(false);            // carregou rom?
+  const [isRunning, setIsRunning] = useState(false);            // está rodando?
+  const [cpuState, setCPUState] = useState<any>(null); // estado da CPU
+  const [romName, setRomName] = useState<string>(""); // nome do arquivo
 
   const chipRef = useRef(new Chip8());
   const chip = chipRef.current;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Renderizar tela
+  const renderScreen = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const screenData = chip.getScreen();
+    
+    ctx.fillStyle = '#001100';
+    ctx.fillRect(0, 0, 640, 320);
+    ctx.fillStyle = '#00ff00';
+    
+    for (let y = 0; y < screenData.length; y++) {
+      for (let x = 0; x < screenData[y].length; x++) {
+        if (screenData[y][x]) {
+          ctx.fillRect(x * 10, y * 10, 10, 10);
+        }
+      }
+    }
+  }, [chip]);
 
   useEffect(() => {
-    let cpuIntervalId: NodeJS.Timeout;
-    let screenUpdateId: NodeJS.Timeout;
+    let cpuIntervalId: NodeJS.Timeout | undefined;
+    let lastCpuStateUpdate = Date.now();
+    let lastScreenUpdate = Date.now();
 
-    // A cada ms, executa 10 instruções = 600 instruções por segundo
-    const runCpu = () => {
-        if (isRunning) {
-        try {
-          for (let i = 0; i < 20; i++) {
-            chip.step();
-          }
-        } catch (error) {
-          console.error("CPU Error:", error);
-          setIsRunning(false);
+    const gameLoop = () => {
+      if (!isRunning) return;
+
+      try {
+        // 10 instruções por ciclo
+        for (let i = 0; i < 10; i++) {
+          chip.step();
         }
+
+        const now = Date.now();
+        
+        // atualizar tela ~30 FPS
+        if (now - lastScreenUpdate >= 33) {
+          renderScreen();
+          lastScreenUpdate = now;
+        }
+
+        // atualizar estado CPU a cada 100ms
+        if (now - lastCpuStateUpdate >= 100) {
+          const state = chip.getCPUState();
+          setCPUState(state);
+          lastCpuStateUpdate = now;
+        }
+      } catch (error) {
+        console.error("CPU Error:", error);
+        setIsRunning(false);
       }
     };
 
-    // Atualiza a tela com o estado atual da tela da instância do chip8
-    const updateScreen = () => {
-      const currentScreen = chip.getScreen();
-      setScreenData([...currentScreen]);
-    };
-
-    // Se o rom está carregado e está rodando, executa o cpu e a tela a cada 16ms e 33ms
     if (romLoaded && isRunning) {
-      cpuIntervalId = setInterval(runCpu, 16); 
-      screenUpdateId = setInterval(updateScreen, 33); 
+      cpuIntervalId = setInterval(gameLoop, 16);
     }
 
     return () => {
       if (cpuIntervalId) clearInterval(cpuIntervalId);
-      if (screenUpdateId) clearInterval(screenUpdateId);
     };
-  }, [romLoaded, isRunning, chip]);
+  }, [romLoaded, isRunning, chip, renderScreen]);
 
 
-  // Captura as teclas pressionadas/liberadas e envia para o chip8
+  // teclas > chip8
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       chip.setKeyState(event.key, true);
@@ -66,18 +98,16 @@ const Menu = () => {
     };
   }, [chip]);
 
-  // Atualiza a tela sempre que o chip8 for atualizado de alguma forma
+  // inicializar ao carregar ROM
   useEffect(() => {
-    const updateScreen = () => {
-      const currentScreen = chip.getScreen();
-      setScreenData([...currentScreen]);
-    };
-
-    updateScreen();
-  }, [chip]);
+    if (romLoaded) {
+      renderScreen();
+      setCPUState(chip.getCPUState());
+    }
+  }, [romLoaded, chip, renderScreen]);
 
 
-  // Carrega o arquivo e envia o conteúdo para o chip8
+  // carrega arquivo
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const file = event.target.files[0];
@@ -91,6 +121,7 @@ const Menu = () => {
           chip.resumeAudio(); // Retomar contexto de áudio
           setRomLoaded(true);
           setIsRunning(true);
+          setRomName(file.name || "");
         }
       };
 
@@ -99,7 +130,7 @@ const Menu = () => {
   };
 
 
-  // Inicia ou para a execução do chip8
+  // Play/Pause
   const toggleExecution = () => {
     if (!isRunning) {
       chip.resumeAudio(); // Retomar contexto de áudio ao continuar
@@ -107,63 +138,84 @@ const Menu = () => {
     setIsRunning(!isRunning);
   };
 
-  // Reseta o chip8 e limpa a tela
+  // resetar estado
   const resetEmulator = () => {
     setIsRunning(false);
     chip.reset();
-    setScreenData([]);
     setRomLoaded(false);
+    setCPUState(null);
+    
+    // limpar canvas
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#001100';
+        ctx.fillRect(0, 0, 640, 320);
+      }
+    }
   };
+
+  // (Step removido) execução apenas contínua/pausada; painel mostra o estado
 
   return (
     <div className="container">
-      <div className="header">
-        <p>Selecione um arquivo ROM (.ch8) para começar:</p>
-        <input type="file" onChange={handleFile} accept=".ch8" />
-        {romLoaded && (
-          <div className="controls">
-            <button onClick={toggleExecution}>
-              {isRunning ? 'Pausar' : 'Continuar'}
-            </button>
-            <button onClick={resetEmulator}>Reset</button>
-          </div>
-        )}
+      {/* Card de controles */}
+      <div className="controls-panel">
+        <div className="header">
+          {!romLoaded && (
+            <>
+              <p>Selecione um arquivo ROM (.ch8) para começar:</p>
+              <input type="file" onChange={handleFile} accept=".ch8" />
+            </>
+          )}
+          {romLoaded && !isRunning && (
+            <>
+              <p>Selecione um arquivo ROM (.ch8) para começar:</p>
+              <input type="file" onChange={handleFile} accept=".ch8" />
+            </>
+          )}
+          {romLoaded && (
+            <div className="controls">
+              <button onClick={toggleExecution}>
+                {isRunning ? 'Pausar' : 'Continuar'}
+              </button>
+              <button onClick={resetEmulator}>Reset</button>
+            </div>
+          )}
+        </div>
       </div>
       
-      {romLoaded && (
-        <div className="screen">
-          <canvas 
-            width="640" 
-            height="320"
-            style={{
-              imageRendering: 'pixelated',
-              width: '640px',
-              height: '320px'
-            }}
-            ref={(canvas) => {
-            // Só desenha se o canvas existe e se a tela não está vazia
-              if (canvas && screenData.length > 0) {
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                  ctx.fillStyle = '#001100';
-                  ctx.fillRect(0, 0, 640, 320);
-                  ctx.fillStyle = '#00ff00';
-                  
-                  for (let y = 0; y < screenData.length; y++) {
-                    for (let x = 0; x < screenData[y].length; x++) {
-                      // Verifica se o pixel está ligado
-                      // Se estiver, desenha um pixel verde (retângulo) na posição x,y
-                      if (screenData[y][x]) {
-                        ctx.fillRect(x * 10, y * 10, 10, 10);
-                      }
-                    }
-                  }
-                }
-              }
-            }}
-          />
+      {/* Card de visualização */}
+      <div className="panel-row">
+        <div className="state-visual-panel">
+          {romLoaded && cpuState && (
+            <div className="registers-panel">
+              <h2>Registradores e Estado</h2>
+              <div className="registers-row">
+                {cpuState.V && cpuState.V.map((v:number,i:number)=>(
+                  <span key={i}>V{i.toString(16).toUpperCase()}: <b>{v.toString(16).toUpperCase().padStart(2,'0')}</b> </span>
+                ))}
+              </div>
+              <div className="registers-row"><b>PC:</b> {cpuState.PC?.toString(16).toUpperCase()} &nbsp; <b>I:</b> {cpuState.I?.toString(16).toUpperCase()} &nbsp;<b>SP:</b> {cpuState.SP?.toString(16).toUpperCase()}</div>
+              <div className="registers-row"><b>Stack:</b> {[...(cpuState.Stack||[])].map((v:number,i:number)=>(v!==0 ? <span key={i}>{v.toString(16).toUpperCase()} </span> : null))}</div>
+              <div className="registers-row"><b>Delay Timer:</b> {cpuState.delayTimer} &nbsp; <b>Sound Timer:</b> {cpuState.soundTimer}</div>
+            </div>
+          )}
+          {romLoaded && (
+            <div className="screen">
+              <canvas 
+                ref={canvasRef}
+                width="640" 
+                height="320"
+                style={{
+                  imageRendering: 'pixelated'
+                }}
+              />
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
