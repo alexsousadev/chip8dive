@@ -29,12 +29,10 @@ export class Chip8 {
         this.cpu.run();
     }
 
-    // Executar uma única instrução
     step() {
         this.cpu.step();
     }
 
-    // Resetar o emulador
     reset() {
         this.cpu.reset();
     }
@@ -47,8 +45,11 @@ export class Chip8 {
         this.keyboard.setKeyState(key, value);
     }
 
-    // Retomar o contexto de áudio (necessário para navegadores)
     resumeAudio() {
         this.cpu.resumeAudio();
+    }
+
+    getCPUState() {
+        return this.cpu.getState();
     }
 }

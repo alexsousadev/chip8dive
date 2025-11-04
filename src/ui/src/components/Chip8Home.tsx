@@ -6,6 +6,7 @@ export default function Chip8Home() {
     
     return (
        <div className="container">
+       <div style={{ marginTop: '200px' }}></div>
         <div className="chip8-box">
             <h1 className="chip8-title">CHIP-8 Dive</h1>
         </div>
@@ -14,7 +15,7 @@ export default function Chip8Home() {
             className="button play-button"
             onClick={() => navigate("/menu")}
             >
-            Play
+            JOGAR
             </button>
       </div>
        </div>

@@ -4,14 +4,6 @@
     box-sizing: border-box;
 }
 
-html,
-body {
-    height: 100%;
-    font-family: 'Courier New', monospace;
-    background-color: #c0c0c0;
-    color: black;
-}
-
 .container {
     display: flex;
     flex-direction: column;
@@ -19,22 +11,26 @@ body {
     justify-content: center;
     height: 100vh;
     width: 100vw;
-    background-color: #e0e0e0;
-    padding: 30px;
-    box-shadow: 5px 5px 10px #999;
+    background-color: #ffffff;
+    padding: 0;
 }
 
 .chip8-box {
-    background-color: #222;
-    color: #00ff00;
-    padding: 20px;
-    margin-bottom: 20px;
+    background-color: #000000;
+    color: #ffffff;
+    padding: 30px;
+    margin-bottom: 30px;
     width: 100%;
-    max-width: 400px;
+    max-width: 600px;
     text-align: center;
     border-radius: 0px;
-    border: 2px solid black;
-    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.8);
+    border: 2px solid #000000;
+}
+
+.chip8-title {
+    font-size: 56px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 }
 
 .buttons-container {
@@ -42,27 +38,26 @@ body {
     flex-direction: column;
     gap: 15px;
     width: 100%;
-    max-width: 400px;
+    max-width: 600px;
 }
 
 .button {
-    padding: 12px 20px;
-    font-size: 2.5vw;
-    max-width: 100%;
-    border: 2px solid #555;
+    padding: 18px 30px;
+    font-size: 32px;
+    width: 100%;
+    border: 2px solid #000000;
     border-radius: 0px;
-    background-color: #ddd;
+    background-color: #ffffff;
     cursor: pointer;
-    color: #333;
+    color: #000000;
     text-align: center;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-    box-shadow: 3px 3px 5px #888;
+    transition: background-color 0.2s, color 0.2s;
+    font-family: 'VT323', monospace;
 }
 
 .button:hover {
-    background-color: #eee;
-    color: black;
-    border-color: black;
+    background-color: #000000;
+    color: #ffffff;
 }
 
 .play-button {
@@ -76,8 +71,11 @@ body {
     .container {
         padding: 15px;
     }
+    .chip8-title {
+        font-size: 42px;
+    }
     .button {
-        font-size: 4vw;
-        padding: 10px 15px;
+        font-size: 28px;
+        padding: 14px 20px;
     }
 }

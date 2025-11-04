@@ -41,26 +41,25 @@ export class CPU {
         this.startTimers();
     }
 
-    // Retomar o áudio (necessário para política de autoplay dos navegadores)
+    // Retomar o áudio (para navegadores)
     public resumeAudio() {
         this.audio.resume();
     }
 
-    // Inicializar a contagem dos timers
+    // Inicializar contagem dos timers
     startTimers() {
         setInterval(() => {
             if (this.delayTimer > 0) {
                 this.delayTimer--;
             }
-
-            // Gerenciar o timer de som com áudio
+            // timer de som junto com áudio
             if (this.soundTimer > 0) {
                 if (!this.audio.isPlaying()) {
-                    this.audio.startBeep(); // Iniciar beep se ainda não estiver tocando
+                    this.audio.startBeep();
                 }
                 this.soundTimer--;
             } else if (this.audio.isPlaying()) {
-                this.audio.stopBeep(); // Parar beep quando o timer chegar a 0
+                this.audio.stopBeep();
             }
         }, 1000 / 60)
     }
@@ -82,8 +81,7 @@ export class CPU {
             const opcode = this.fetch();
             const instruction = this.decode(opcode);
             this.execute(instruction);
-            
-            // Só incrementar PC se a instrução não foi um desvio
+            // Só incrementa PC se não for desvio
             if (!this.isJumpInstruction(instruction.name)) {
                 this.PC += 2;
             }
@@ -115,7 +113,7 @@ export class CPU {
         }
     }
 
-    // Resetar o estado da CPU
+    // Resetar CPU
     reset() {
         this.PC = 0x200;
         this.I = 0;
@@ -124,14 +122,26 @@ export class CPU {
         this.Stack.fill(0);
         this.delayTimer = 0;
         this.soundTimer = 0;
-        this.audio.stopBeep(); // Parar qualquer som tocando
+        this.audio.stopBeep();
         this.display.cleanDisplay();
     }
-        execute(instruction: IDecodedInstruction) {
+
+    public getState() {
+        return {
+            V: Array.from(this.V),
+            I: this.I,
+            PC: this.PC,
+            SP: this.SP,
+            Stack: Array.from(this.Stack),
+            delayTimer: this.delayTimer,
+            soundTimer: this.soundTimer,
+        };
+    }
+        // Executar instrução
+    execute(instruction: IDecodedInstruction) {
         switch (instruction.name) {
-            // 0xxx
             case "SYSTEM_CALL":
-                // Ignorado na maioria dos interpretadores modernos
+                // Ignorado
                 break;
             case "CLEAR_SCREEN":
                 this.display.cleanDisplay();
