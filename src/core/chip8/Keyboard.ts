@@ -60,7 +60,11 @@ export class Keyboard {
     addKeyToHistory(key: string) {
         this.historyOfKeysPressed.push(key);
     }
-
+    
+    clearHistory() {
+        this.historyOfKeysPressed = [];
+    }
+    
     getHistoryOfKeysPressed(): string[] {
         return this.historyOfKeysPressed;
     }
@@ -73,9 +77,6 @@ export class Keyboard {
         return new Map(this.keys);
     }
 
-    clearHistory() {
-        this.historyOfKeysPressed = [];
-    }
 
     isKeyPressReleaseCycleComplete(key: string): boolean {
         return this.keyPressReleaseCycle.get(key) === true;

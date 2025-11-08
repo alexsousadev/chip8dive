@@ -180,6 +180,13 @@ const Menu = () => {
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const file = event.target.files[0];
+      
+      // Valida se o arquivo é uma ROM válida
+      if (!isValidRomFile(file.name)) {
+        alert('Por favor, selecione um arquivo ROM válido (.ch8 ou binário sem extensão).');
+        return;
+      }
+      
       const reader = new FileReader();
 
       reader.onloadend = (event) => {
@@ -205,14 +212,20 @@ const Menu = () => {
     folderInputRef.current?.click();
   };
 
+  const isValidRomFile = (fileName: string): boolean => {
+    const lowerName = fileName.toLowerCase();
+    // Aceita arquivos .ch8 ou arquivos binários sem extensão
+    return lowerName.endsWith('.ch8') || !lowerName.includes('.');
+  };
+
   const handleFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files).filter(file => 
-        file.name.toLowerCase().endsWith('.ch8')
+        isValidRomFile(file.name)
       );
 
       if (files.length === 0) {
-        alert('Nenhum arquivo .ch8 encontrado na pasta selecionada.');
+        alert('Nenhum arquivo ROM (.ch8 ou binário sem extensão) encontrado na pasta selecionada.');
         return;
       }
 
@@ -355,7 +368,6 @@ const Menu = () => {
             ref={fileInputRef}
             type="file"
             onChange={handleFile}
-            accept=".ch8"
             style={{ display: 'none' }}
           />
           <input
@@ -439,89 +451,102 @@ const Menu = () => {
               {infoToggleOpen && (
                 <div className="toggle-content">
                   <ul>
-                    <li>O emulador aceita as ROMS no formato .ch8</li>
+                    <li>O emulador aceita ROMs no formato .ch8 ou arquivos binários sem extensão</li>
                     <li>Se você não estiver ouvindo nenhum som durante a execução dos jogos, verifique se o seu navegador está permitindo a reprodução de áudio</li>
                   </ul>
                 </div>
               )}
-              <button 
-                className="toggle-header"
-                onClick={() => setControlsToggleOpen(!controlsToggleOpen)}
-              >
-                <span>Controles</span>
-                <span className="toggle-icon">{controlsToggleOpen ? '−' : '+'}</span>
-              </button>
-              {controlsToggleOpen && (
-                <div className="toggle-content">
-                  <div className="controls-table-container">
-                    <div className="keyboard-grid">
-                      <div className="grid-title">Teclado</div>
-                      <table className="retro-grid-table">
-                        <tbody>
-                          <tr>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                            <td>4</td>
-                          </tr>
-                          <tr>
-                            <td>Q</td>
-                            <td>W</td>
-                            <td>E</td>
-                            <td>R</td>
-                          </tr>
-                          <tr>
-                            <td>A</td>
-                            <td>S</td>
-                            <td>D</td>
-                            <td>F</td>
-                          </tr>
-                          <tr>
-                            <td>Z</td>
-                            <td>X</td>
-                            <td>C</td>
-                            <td>V</td>
-                          </tr>
-                        </tbody>
-                      </table>
+              <div className="config-wrapper">
+                <button 
+                  className="toggle-header"
+                  onClick={() => setControlsToggleOpen(!controlsToggleOpen)}
+                >
+                  <span>Controles</span>
+                  <span className="toggle-icon">{controlsToggleOpen ? '−' : '+'}</span>
+                </button>
+                {controlsToggleOpen && (
+                  <div className="config-overlay controls-overlay">
+                    <div className="config-overlay-header">
+                      <span>Mapeamento de Teclas</span>
+                      <button
+                        type="button"
+                        className="config-overlay-close"
+                        onClick={() => setControlsToggleOpen(false)}
+                        aria-label="Fechar controles"
+                      >
+                        ×
+                      </button>
                     </div>
-                    <div className="arrow-container">
-                      <span className="arrow">→</span>
-                    </div>
-                    <div className="chip8-grid">
-                      <div className="grid-title">CHIP-8</div>
-                      <table className="retro-grid-table">
-                        <tbody>
-                          <tr>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                            <td>C</td>
-                          </tr>
-                          <tr>
-                            <td>4</td>
-                            <td>5</td>
-                            <td>6</td>
-                            <td>D</td>
-                          </tr>
-                          <tr>
-                            <td>7</td>
-                            <td>8</td>
-                            <td>9</td>
-                            <td>E</td>
-                          </tr>
-                          <tr>
-                            <td>A</td>
-                            <td>0</td>
-                            <td>B</td>
-                            <td>F</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div className="controls-table-container">
+                      <div className="keyboard-grid">
+                        <div className="grid-title">Teclado</div>
+                        <table className="retro-grid-table">
+                          <tbody>
+                            <tr>
+                              <td>1</td>
+                              <td>2</td>
+                              <td>3</td>
+                              <td>4</td>
+                            </tr>
+                            <tr>
+                              <td>Q</td>
+                              <td>W</td>
+                              <td>E</td>
+                              <td>R</td>
+                            </tr>
+                            <tr>
+                              <td>A</td>
+                              <td>S</td>
+                              <td>D</td>
+                              <td>F</td>
+                            </tr>
+                            <tr>
+                              <td>Z</td>
+                              <td>X</td>
+                              <td>C</td>
+                              <td>V</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="arrow-container">
+                        <span className="arrow">→</span>
+                      </div>
+                      <div className="chip8-grid">
+                        <div className="grid-title">CHIP-8</div>
+                        <table className="retro-grid-table">
+                          <tbody>
+                            <tr>
+                              <td>1</td>
+                              <td>2</td>
+                              <td>3</td>
+                              <td>C</td>
+                            </tr>
+                            <tr>
+                              <td>4</td>
+                              <td>5</td>
+                              <td>6</td>
+                              <td>D</td>
+                            </tr>
+                            <tr>
+                              <td>7</td>
+                              <td>8</td>
+                              <td>9</td>
+                              <td>E</td>
+                            </tr>
+                            <tr>
+                              <td>A</td>
+                              <td>0</td>
+                              <td>B</td>
+                              <td>F</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
               <div className="config-wrapper">
                 <button 
                   className="toggle-header"

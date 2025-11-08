@@ -16,10 +16,6 @@ export class Chip8 {
         this.cpu = new CPU(this.memory, this.display, this.keyboard);
     }
 
-    debugMemory() {
-        return `memória: ${this.memory.getByte(0x200)}\n`;
-    }
-
     loadROM(romContent: Uint8Array) {
         this.memory.loadROMInRAM(romContent as Buffer);
     }

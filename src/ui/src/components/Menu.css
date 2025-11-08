@@ -437,6 +437,17 @@
   line-height: 1.4;
 }
 
+.controls-overlay {
+  width: min(600px, 90vw) !important;
+}
+
+@media (max-width: 860px) {
+  .controls-overlay {
+    width: calc(100% - 32px) !important;
+    max-width: 600px !important;
+  }
+}
+
 /* ============================================
    7. TABELA DE CONTROLES (ESTILO RETRO)
    ============================================ */
