@@ -3,6 +3,7 @@ import { FaFileUpload, FaPause, FaPlay, FaFolderOpen } from "react-icons/fa";
 import { RiResetLeftFill } from "react-icons/ri";
 import { VscDebug, VscDebugStepOver } from "react-icons/vsc";
 import { Chip8 } from "../../../core/chip8/chip8";
+import { GitHubLink } from "./shared/GitHubLink";
 import "./Menu.css";
 
 interface RomFile {
@@ -11,22 +12,36 @@ interface RomFile {
 }
 
 const Menu = () => {
-  const [romLoaded, setRomLoaded] = useState(false);            // carregou rom?
-  const [isRunning, setIsRunning] = useState(false);            // está rodando?
-  const [debugMode, setDebugMode] = useState(false); // modo debug
-  const [loadedRoms, setLoadedRoms] = useState<RomFile[]>([]); // ROMs carregadas da pasta
-  const [selectedRomIndex, setSelectedRomIndex] = useState<number | null>(null); // ROM selecionada
-  const [showConfirmModal, setShowConfirmModal] = useState(false); // mostra modal de confirmação
-  const [pendingRomIndex, setPendingRomIndex] = useState<number | null>(null); // ROM pendente de carregamento
-
+  const [romLoaded, setRomLoaded] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [loadedRoms, setLoadedRoms] = useState<RomFile[]>([]);
+  const [selectedRomIndex, setSelectedRomIndex] = useState<number | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingRomIndex, setPendingRomIndex] = useState<number | null>(null);
+  const [infoToggleOpen, setInfoToggleOpen] = useState(false);
+  const [controlsToggleOpen, setControlsToggleOpen] = useState(false);
+  const [configToggleOpen, setConfigToggleOpen] = useState(false);
   const chipRef = useRef(new Chip8());
   const chip = chipRef.current;
+  const [memoryIncrementMode, setMemoryIncrementMode] = useState(chip.getMemoryIncrementMode());
+  const [shiftMode, setShiftMode] = useState(chip.getShiftMode());
+  const [clippingMode, setClippingMode] = useState(chip.getClippingMode());
+  const [vfResetMode, setVfResetMode] = useState(chip.getVfResetMode());
+  const [jumpWithVxMode, setJumpWithVxMode] = useState(chip.getJumpWithVxMode());
+  const [configDescriptionOpen, setConfigDescriptionOpen] = useState({
+    vfReset: false,
+    memoryIncrement: false,
+    shiftLegacy: false,
+    clipping: false,
+    jumpWithVx: false,
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   
 
-  // Renderizar tela
+  // Renderiza o display CHIP-8 no canvas: cada pixel 64x32 é desenhado como 10x10
   const renderScreen = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -49,42 +64,54 @@ const Menu = () => {
   }, [chip]);
 
   useEffect(() => {
-    let cpuIntervalId: NodeJS.Timeout | undefined;
+    let animationFrameId: number | undefined;
     let lastScreenUpdate = Date.now();
+    let shouldRun = true;
 
     const gameLoop = () => {
-      if (!isRunning || debugMode) return;
+      if (!shouldRun || !isRunning || debugMode) {
+        shouldRun = false;
+        return;
+      }
 
       try {
-        // 10 instruções por ciclo
-        for (let i = 0; i < 10; i++) {
+        // Executa muitas instruções por frame para garantir determinismo
+        for (let i = 0; i < 10000; i++) {
           chip.step();
         }
 
         const now = Date.now();
         
-        // atualizar tela ~30 FPS
-        if (now - lastScreenUpdate >= 33) {
+        // Atualiza tela a ~60 FPS (16.67ms por frame)
+        if (now - lastScreenUpdate >= 16.67) {
           renderScreen();
           lastScreenUpdate = now;
         }
       } catch (error) {
         console.error("CPU Error:", error);
         setIsRunning(false);
+        shouldRun = false;
+        return;
+      }
+
+      if (shouldRun && isRunning && !debugMode) {
+        animationFrameId = requestAnimationFrame(gameLoop);
       }
     };
 
-    if (romLoaded && isRunning) {
-      cpuIntervalId = setInterval(gameLoop, 16);
+    if (romLoaded && isRunning && !debugMode) {
+      shouldRun = true;
+      animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     return () => {
-      if (cpuIntervalId) clearInterval(cpuIntervalId);
+      shouldRun = false;
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [romLoaded, isRunning, debugMode, chip, renderScreen]);
 
 
-  // teclas > chip8
+  // Mapeia eventos de teclado do navegador para o emulador CHIP-8
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       chip.setKeyState(event.key, true);
@@ -103,15 +130,53 @@ const Menu = () => {
     };
   }, [chip]);
 
-  // inicializar ao carregar ROM
   useEffect(() => {
     if (romLoaded) {
       renderScreen();
     }
   }, [romLoaded, chip, renderScreen]);
 
+  useEffect(() => {
+    chip.setMemoryIncrementMode(memoryIncrementMode);
+  }, [memoryIncrementMode, chip]);
 
-  // carrega arquivo
+  useEffect(() => {
+    chip.setShiftMode(shiftMode);
+  }, [shiftMode, chip]);
+
+  useEffect(() => {
+    chip.setClippingMode(clippingMode);
+  }, [clippingMode, chip]);
+
+  useEffect(() => {
+    chip.setVfResetMode(vfResetMode);
+  }, [vfResetMode, chip]);
+
+  useEffect(() => {
+    chip.setJumpWithVxMode(jumpWithVxMode);
+  }, [jumpWithVxMode, chip]);
+
+  const handleMemoryIncrementModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMemoryIncrementMode(event.target.checked);
+  };
+
+  const handleShiftModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setShiftMode(event.target.checked);
+  };
+
+  const handleClippingModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setClippingMode(event.target.checked);
+  };
+
+  const handleVfResetModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setVfResetMode(event.target.checked);
+  };
+
+  const handleJumpWithVxModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setJumpWithVxMode(event.target.checked);
+  };
+
+
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const file = event.target.files[0];
@@ -122,7 +187,7 @@ const Menu = () => {
         if (result instanceof ArrayBuffer) {
           const romData = new Uint8Array(result);
           chip.loadROM(romData);
-          chip.resumeAudio(); // Retomar contexto de áudio
+          chip.resumeAudio();
           setRomLoaded(true);
           setIsRunning(true);
         }
@@ -140,7 +205,6 @@ const Menu = () => {
     folderInputRef.current?.click();
   };
 
-  // carrega pasta
   const handleFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files).filter(file => 
@@ -154,7 +218,6 @@ const Menu = () => {
 
       const romFiles: RomFile[] = [];
 
-      // Carregar todos os arquivos .ch8 da pasta
       for (const file of files) {
         const reader = new FileReader();
         const romFile = await new Promise<RomFile>((resolve, reject) => {
@@ -176,7 +239,7 @@ const Menu = () => {
       }
 
       setLoadedRoms(romFiles);
-      // Carregar automaticamente a primeira ROM
+      // Carrega automaticamente a primeira ROM da pasta
       if (romFiles.length > 0) {
         const firstRom = romFiles[0];
         chip.loadROM(firstRom.data);
@@ -188,7 +251,6 @@ const Menu = () => {
     }
   };
 
-  // carrega ROM da lista
   const loadRomFromList = (index: number) => {
     if (index >= 0 && index < loadedRoms.length) {
       const romFile = loadedRoms[index];
@@ -201,10 +263,10 @@ const Menu = () => {
   };
 
 
-  // Play/Pause
   const toggleExecution = () => {
+    // Retoma áudio ao continuar (navegadores bloqueiam autoplay)
     if (!isRunning) {
-      chip.resumeAudio(); // Retomar contexto de áudio ao continuar
+      chip.resumeAudio();
     }
     setIsRunning(!isRunning);
   };
@@ -226,7 +288,6 @@ const Menu = () => {
     }
   };
 
-  // resetar estado
   const resetEmulator = () => {
     setIsRunning(false);
     setDebugMode(false);
@@ -234,7 +295,6 @@ const Menu = () => {
     setRomLoaded(false);
     setSelectedRomIndex(null);
     
-    // limpar canvas
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -244,7 +304,6 @@ const Menu = () => {
     }
   };
 
-  // confirmar troca de ROM
   const confirmRomChange = () => {
     if (pendingRomIndex !== null) {
       resetEmulator();
@@ -254,22 +313,18 @@ const Menu = () => {
     }
   };
 
-  // cancelar troca de ROM
   const cancelRomChange = () => {
     setShowConfirmModal(false);
     setPendingRomIndex(null);
   };
 
-  // (Step removido) execução apenas contínua/pausada; painel mostra o estado
-
   return (
     <>
-      {/* Modal de confirmação */}
       {showConfirmModal && (
         <div className="modal-overlay" onClick={cancelRomChange}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚠️ Trocar de ROM</h3>
+              <h3>[!] Trocar de ROM</h3>
             </div>
             <div className="modal-body">
               <p>A ROM atual está em execução.</p>
@@ -288,19 +343,12 @@ const Menu = () => {
         </div>
       )}
     <div className="container">
-      {/* GitHub icon floating */}
-      <a className="gh-float" href="https://github.com/alexsousadev/chip8dive" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
-        <svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true">
-          <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
-        </svg>
-      </a>
-      {/* Debug button floating */}
+      <GitHubLink />
       {romLoaded && (
         <button className="debug-float" onClick={toggleDebugMode}>
           {debugMode ? <> <VscDebug /> Sair do Debug </> : <> <VscDebug /> Debug </>}
         </button>
       )}
-      {/* Card de controles */}
       <div className="controls-panel">
         <div className="header">
           <input
@@ -314,7 +362,7 @@ const Menu = () => {
             ref={folderInputRef}
             type="file"
             onChange={handleFolder}
-            // @ts-ignore - webkitdirectory is not in the type definitions
+            // @ts-ignore - webkitdirectory não está nas definições de tipo do React
             webkitdirectory=""
             style={{ display: 'none' }}
           />
@@ -330,8 +378,8 @@ const Menu = () => {
                     const index = parseInt(e.target.value);
                     if (isNaN(index)) return;
                     if (index === selectedRomIndex) return;
+                    // Se em execução, pede confirmação antes de trocar ROM
                     if (isRunning) {
-                      // Mostrar modal de confirmação
                       setPendingRomIndex(index);
                       setShowConfirmModal(true);
                     } else {
@@ -363,7 +411,6 @@ const Menu = () => {
         </div>
       </div>
       
-      {/* Card de visualização */}
       <div className="panel-row">
         <div className="state-visual-panel">
           <div className="screen">
@@ -381,11 +428,252 @@ const Menu = () => {
             )}
           </div>
           <div className="info-panel">
-            <h3>Informações</h3>
-            <ul>
-              <li>O emulador aceita as ROMS no formato .ch8</li>
-              <li>Se você não estiver ouvindo nenhum som durante a execução dos jogos, verifique se o seu navegador está permitindo a reprodução de áudio</li>
-            </ul>
+            <div className="toggle-list">
+              <button 
+                className="toggle-header"
+                onClick={() => setInfoToggleOpen(!infoToggleOpen)}
+              >
+                <span>Informações</span>
+                <span className="toggle-icon">{infoToggleOpen ? '−' : '+'}</span>
+              </button>
+              {infoToggleOpen && (
+                <div className="toggle-content">
+                  <ul>
+                    <li>O emulador aceita as ROMS no formato .ch8</li>
+                    <li>Se você não estiver ouvindo nenhum som durante a execução dos jogos, verifique se o seu navegador está permitindo a reprodução de áudio</li>
+                  </ul>
+                </div>
+              )}
+              <button 
+                className="toggle-header"
+                onClick={() => setControlsToggleOpen(!controlsToggleOpen)}
+              >
+                <span>Controles</span>
+                <span className="toggle-icon">{controlsToggleOpen ? '−' : '+'}</span>
+              </button>
+              {controlsToggleOpen && (
+                <div className="toggle-content">
+                  <div className="controls-table-container">
+                    <div className="keyboard-grid">
+                      <div className="grid-title">Teclado</div>
+                      <table className="retro-grid-table">
+                        <tbody>
+                          <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>4</td>
+                          </tr>
+                          <tr>
+                            <td>Q</td>
+                            <td>W</td>
+                            <td>E</td>
+                            <td>R</td>
+                          </tr>
+                          <tr>
+                            <td>A</td>
+                            <td>S</td>
+                            <td>D</td>
+                            <td>F</td>
+                          </tr>
+                          <tr>
+                            <td>Z</td>
+                            <td>X</td>
+                            <td>C</td>
+                            <td>V</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="arrow-container">
+                      <span className="arrow">→</span>
+                    </div>
+                    <div className="chip8-grid">
+                      <div className="grid-title">CHIP-8</div>
+                      <table className="retro-grid-table">
+                        <tbody>
+                          <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>C</td>
+                          </tr>
+                          <tr>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>D</td>
+                          </tr>
+                          <tr>
+                            <td>7</td>
+                            <td>8</td>
+                            <td>9</td>
+                            <td>E</td>
+                          </tr>
+                          <tr>
+                            <td>A</td>
+                            <td>0</td>
+                            <td>B</td>
+                            <td>F</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="config-wrapper">
+                <button 
+                  className="toggle-header"
+                  onClick={() => setConfigToggleOpen(!configToggleOpen)}
+                >
+                  <span>Configurações</span>
+                  <span className="toggle-icon">{configToggleOpen ? '−' : '+'}</span>
+                </button>
+                {configToggleOpen && (
+                  <div className="config-overlay">
+                    <div className="config-overlay-header">
+                      <span>Ajustes de Compatibilidade</span>
+                      <button
+                        type="button"
+                        className="config-overlay-close"
+                        onClick={() => setConfigToggleOpen(false)}
+                        aria-label="Fechar configurações"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="config-options">
+                      <div className={`config-option ${configDescriptionOpen.vfReset ? "active" : ""}`}>
+                        <label className="config-label">
+                          <input
+                            type="checkbox"
+                            checked={vfResetMode}
+                            onChange={handleVfResetModeChange}
+                            className="config-checkbox"
+                          />
+                          <button
+                            type="button"
+                            className="config-text"
+                            onClick={() =>
+                              setConfigDescriptionOpen(prev => ({
+                                ...prev,
+                                vfReset: !prev.vfReset,
+                              }))
+                            }
+                          >
+                            <strong>Reset de VF</strong>
+                            <span className={`config-description ${configDescriptionOpen.vfReset ? "visible" : ""}`}>
+                              Zera o registrador VF antes das operações 8XY1/8XY2/8XY3, refletindo o comportamento original do COSMAC VIP.
+                            </span>
+                          </button>
+                        </label>
+                      </div>
+                      <div className={`config-option ${configDescriptionOpen.memoryIncrement ? "active" : ""}`}>
+                        <label className="config-label">
+                          <input
+                            type="checkbox"
+                            checked={memoryIncrementMode}
+                            onChange={handleMemoryIncrementModeChange}
+                            className="config-checkbox"
+                          />
+                          <button
+                            type="button"
+                            className="config-text"
+                            onClick={() =>
+                              setConfigDescriptionOpen(prev => ({
+                                ...prev,
+                                memoryIncrement: !prev.memoryIncrement,
+                              }))
+                            }
+                          >
+                            <strong>Incremento do Registrador I</strong>
+                            <span className={`config-description ${configDescriptionOpen.memoryIncrement ? "visible" : ""}`}>
+                              Quando ativo, as instruções FX55 e FX65 avançam o registrador I a cada byte salvo ou carregado, como nos intérpretes da década de 1970.
+                            </span>
+                          </button>
+                        </label>
+                      </div>
+                      <div className={`config-option ${configDescriptionOpen.shiftLegacy ? "active" : ""}`}>
+                        <label className="config-label">
+                          <input
+                            type="checkbox"
+                            checked={shiftMode}
+                            onChange={handleShiftModeChange}
+                            className="config-checkbox"
+                          />
+                          <button
+                            type="button"
+                            className="config-text"
+                            onClick={() =>
+                              setConfigDescriptionOpen(prev => ({
+                                ...prev,
+                                shiftLegacy: !prev.shiftLegacy,
+                              }))
+                            }
+                          >
+                            <strong>Operação de Shift Legada</strong>
+                            <span className={`config-description ${configDescriptionOpen.shiftLegacy ? "visible" : ""}`}>
+                              Faz com que 8XY6 e 8XYE copiem VY para VX antes de aplicar o deslocamento, compatível com o COSMAC VIP.
+                            </span>
+                          </button>
+                        </label>
+                      </div>
+                      <div className={`config-option ${configDescriptionOpen.clipping ? "active" : ""}`}>
+                        <label className="config-label">
+                          <input
+                            type="checkbox"
+                            checked={clippingMode}
+                            onChange={handleClippingModeChange}
+                            className="config-checkbox"
+                          />
+                          <button
+                            type="button"
+                            className="config-text"
+                            onClick={() =>
+                              setConfigDescriptionOpen(prev => ({
+                                ...prev,
+                                clipping: !prev.clipping,
+                              }))
+                            }
+                          >
+                            <strong>Clipping de Sprites</strong>
+                            <span className={`config-description ${configDescriptionOpen.clipping ? "visible" : ""}`}>
+                              Mantém os sprites dentro da tela sem wrap-around. Desative para permitir que ultrapassem as bordas e reapareçam do outro lado.
+                            </span>
+                          </button>
+                        </label>
+                      </div>
+                      <div className={`config-option ${configDescriptionOpen.jumpWithVx ? "active" : ""}`}>
+                        <label className="config-label">
+                          <input
+                            type="checkbox"
+                            checked={jumpWithVxMode}
+                            onChange={handleJumpWithVxModeChange}
+                            className="config-checkbox"
+                          />
+                          <button
+                            type="button"
+                            className="config-text"
+                            onClick={() =>
+                              setConfigDescriptionOpen(prev => ({
+                                ...prev,
+                                jumpWithVx: !prev.jumpWithVx,
+                              }))
+                            }
+                          >
+                            <strong>Operação Jumping Legada</strong>
+                            <span className={`config-description ${configDescriptionOpen.jumpWithVx ? "visible" : ""}`}>
+                              Faz com que o salto BNNN use VX como offset em vez de V0, igual às variantes CHIP-48 e SUPER-CHIP.
+                            </span>
+                          </button>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

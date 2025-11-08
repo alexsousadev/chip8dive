@@ -26,33 +26,29 @@ export class Keyboard {
           ]);
     }
 
-    // Set state of the key
     setKeyState(key: string, value: boolean) {
         if (this.keys.has(key)) {
             const keyCode = this.keys.get(key)!;
             this.keysState.set(keyCode, value);
             
-            if (value) { // Key pressed
-                // Marcar que a tecla foi pressionada (início do ciclo)
+            if (value) {
+                // Tecla pressionada: aguarda delay antes de adicionar ao histórico
                 this.keyPressReleaseCycle.set(key, false);
                 
-                // Limpar timer anterior se existir
                 if (this.keyPressTimers.has(key)) {
                     clearTimeout(this.keyPressTimers.get(key)!);
                 }
                 
-                // Criar novo timer para adicionar ao histórico após delay
                 const timer = setTimeout(() => {
                     this.addKeyToHistory(key);
                     this.keyPressTimers.delete(key);
                 }, this.keyPressDelay);
                 
                 this.keyPressTimers.set(key, timer);
-            } else { // Key released
-                // Marcar que a tecla foi solta (fim do ciclo)
+            } else {
+                // Tecla solta: marca ciclo completo para Fx0A
                 this.keyPressReleaseCycle.set(key, true);
                 
-                // Cancelar timer se a tecla foi solta antes do delay
                 if (this.keyPressTimers.has(key)) {
                     clearTimeout(this.keyPressTimers.get(key)!);
                     this.keyPressTimers.delete(key);
@@ -77,17 +73,14 @@ export class Keyboard {
         return new Map(this.keys);
     }
 
-    // Limpar o histórico de teclas pressionadas
     clearHistory() {
         this.historyOfKeysPressed = [];
     }
 
-    // Verificar se uma tecla completou o ciclo pressionar->soltar
     isKeyPressReleaseCycleComplete(key: string): boolean {
         return this.keyPressReleaseCycle.get(key) === true;
     }
 
-    // Limpar o ciclo de uma tecla específica
     clearKeyPressReleaseCycle(key: string) {
         this.keyPressReleaseCycle.delete(key);
     }

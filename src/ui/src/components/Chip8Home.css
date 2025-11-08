@@ -1,8 +1,20 @@
+/* ============================================
+   ESTILIZAÇÃO DA PÁGINA INICIAL CHIP-8
+   ============================================ */
+
+/* ============================================
+   1. RESET E BASE
+   ============================================ */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
+
+/* ============================================
+   2. LAYOUT PRINCIPAL
+   ============================================ */
 
 .container {
     display: flex;
@@ -14,6 +26,14 @@
     background-color: #ffffff;
     padding: 0;
 }
+
+.home-spacer {
+    margin-top: 200px;
+}
+
+/* ============================================
+   3. TÍTULO E BOX PRINCIPAL
+   ============================================ */
 
 .chip8-box {
     background-color: #000000;
@@ -32,6 +52,10 @@
     letter-spacing: 3px;
     text-transform: uppercase;
 }
+
+/* ============================================
+   4. BOTÕES
+   ============================================ */
 
 .buttons-container {
     display: flex;
@@ -67,13 +91,25 @@
     gap: 8px;
 }
 
+/* ============================================
+   5. ELEMENTOS FLUTUANTES
+   ============================================ */
+
+/* Nota: O estilo do .gh-float está em index.css (componente compartilhado) */
+
+/* ============================================
+   6. RESPONSIVIDADE
+   ============================================ */
+
 @media (max-width: 600px) {
     .container {
         padding: 15px;
     }
+    
     .chip8-title {
         font-size: 42px;
     }
+    
     .button {
         font-size: 28px;
         padding: 14px 20px;

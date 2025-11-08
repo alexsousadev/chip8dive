@@ -14,10 +14,16 @@ export class Display {
     }
 
     getPixel(xPos: number, yPos: number) {
+        if (xPos < 0 || xPos >= this.display_width || yPos < 0 || yPos >= this.display_height) {
+            return 0;
+        }
         return this.display[yPos][xPos];
     }
 
     setPixel(xPos: number, yPos: number, value: number) {
+        if (xPos < 0 || xPos >= this.display_width || yPos < 0 || yPos >= this.display_height) {
+            return;
+        }
         this.display[yPos][xPos] = value;
     }
     

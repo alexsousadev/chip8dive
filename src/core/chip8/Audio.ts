@@ -7,7 +7,6 @@ export class Audio {
         this.init();
     }
 
-    // Inicializar contexto de áudio
     private init() {
         try {
             this.audioContext = new AudioContext();
@@ -19,18 +18,16 @@ export class Audio {
         }
     }
 
-    // Iniciar o som de beep
     startBeep() {
         if (!this.audioContext || !this.gainNode || this.oscillator) return;
         
         this.oscillator = this.audioContext.createOscillator();
-        this.oscillator.type = 'square'; // beep clássico
-        this.oscillator.frequency.value = 440; // 440 Hz
+        this.oscillator.type = 'square';
+        this.oscillator.frequency.value = 440;
         this.oscillator.connect(this.gainNode);
         this.oscillator.start();
     }
 
-    // Parar o som de beep
     stopBeep() {
         if (this.oscillator) {
             this.oscillator.stop();
@@ -39,14 +36,13 @@ export class Audio {
         }
     }
 
-    // Retomar o áudio (necessário para política de autoplay dos navegadores)
+    // Navegadores bloqueiam autoplay de áudio - precisa de interação do usuário
     resume() {
         if (this.audioContext && this.audioContext.state === 'suspended') {
             this.audioContext.resume();
         }
     }
 
-    // Verificar se o beep está tocando
     isPlaying(): boolean {
         return this.oscillator !== null;
     }

@@ -66,3 +66,31 @@ button:focus-visible {
 }
 
 /* Light design by default */
+
+/* ============================================
+   COMPONENTES COMPARTILHADOS
+   ============================================ */
+
+/* Ícone do GitHub flutuante - usado em múltiplas páginas */
+.gh-float {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  text-decoration: none;
+  z-index: 1001;
+}
+
+.gh-float:hover {
+  background: #ffffff;
+  border-color: #000000;
+  color: #000000;
+}

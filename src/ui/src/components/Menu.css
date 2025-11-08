@@ -1,4 +1,10 @@
-/* Estilização básica para o emulador CHIP-8 */
+/* ============================================
+   ESTILIZAÇÃO DO EMULADOR CHIP-8
+   ============================================ */
+
+/* ============================================
+   1. LAYOUT PRINCIPAL
+   ============================================ */
 
 .container {
   display: flex;
@@ -15,75 +21,9 @@
   gap: 8px;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 5px;
-}
-
-.header h1 {
-  font-size: 2em;
-  margin-bottom: 5px;
-  color: #00ff00;
-  text-shadow: 0 0 10px #00ff00;
-}
-
-.header p {
-  font-size: 0.95em;
-  margin-bottom: 8px;
-  color: #b8f5cf;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-.header input[type="file"] {
-  margin-bottom: 8px;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #1a3a1f 0%, #0d1f12 100%);
-  color: #00ff88;
-  border: 2px solid #2a7a3f;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 255, 100, 0.1);
-}
-
-.header input[type="file"]:hover {
-  border-color: #3fb05a;
-  background: linear-gradient(135deg, #1f4727 0%, #112516 100%);
-  box-shadow: 0 4px 12px rgba(0, 255, 100, 0.25);
-  transform: translateY(-1px);
-}
-
-.header input[type="file"]::file-selector-button {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #20c55e 0%, #17994a 100%);
-  color: #001a08;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-family: 'Courier New', monospace;
-  margin-right: 12px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.header input[type="file"]::file-selector-button:hover {
-  background: linear-gradient(135deg, #2be876 0%, #1fb05a 100%);
-  box-shadow: 0 3px 10px rgba(32, 197, 94, 0.4);
-  transform: translateY(-1px);
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 8px;
-  justify-content: center;
-  align-items: center;
-}
+/* ============================================
+   2. PAINÉIS E ESTRUTURA
+   ============================================ */
 
 .controls-panel {
   border-radius: 10px;
@@ -95,6 +35,7 @@
   align-items: center;
   flex-shrink: 0;
 }
+
 .controls-panel .header {
   width: 100%;
   display: flex;
@@ -102,6 +43,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .panel-row {
   display: flex;
   flex-direction: column;
@@ -117,6 +59,7 @@
   padding: 0;
   min-height: 0;
 }
+
 .state-visual-panel {
   display: flex;
   flex-direction: column;
@@ -128,122 +71,20 @@
   width: 100%;
   max-height: none;
 }
-.side-panel {
-  width: 35%;
-  max-height: calc(100vh - 120px);
-  background: #121212;
-  border-radius: 8px;
-  border: 1px solid #203520;
-  padding: 12px 14px;
-  overflow-y: auto;
+
+/* ============================================
+   3. BOTÕES E CONTROLES
+   ============================================ */
+
+.controls {
   display: flex;
-  flex-direction: column;
-}
-.side-panel h3 {
-  margin: 0 0 8px 0;
-  color: #00ff70;
-  font-size: 1rem;
-}
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-  flex-direction: column;
-}
-.tab {
-  padding: 6px 10px;
-  background: #142016;
-  border: 1px solid #1f3b22;
-  color: #b8f5cf;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
-  width: 100%;
-  text-align: left;
-}
-.tab:hover {
-  background: #1a2a1d;
-  border-color: #2a7a3f;
-}
-.tab.active {
-  background: #1e3d25;
-  color: #00ff88;
-  border-color: #2a7a3f;
-}
-.settings-section {
-  background: #0e180f;
-  border: 1px solid #184a23;
-  border-radius: 6px;
-  padding: 10px 12px;
-  color: #d7ffd7;
-  overflow-x: hidden;
-}
-.settings-section p {
-  margin: 0 0 8px 0;
-  font-size: 0.95em;
-  line-height: 1.35;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-.settings-actions {
-  display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
   margin-top: 8px;
+  justify-content: center;
+  align-items: center;
 }
-.settings-actions a {
-  padding: 8px 12px;
-  background: #1e3d25;
-  border: 1px solid #2a7a3f;
-  color: #00ff88;
-  border-radius: 6px;
-  text-decoration: none;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
-  transition: all 0.2s ease;
-}
-.settings-actions a:hover {
-  background: #25502e;
-  border-color: #3fb05a;
-}
-.settings-section ul,
-.settings-section ol {
-  margin: 0 0 8px 0;
-  padding-left: 18px;
-  list-style-position: inside;
-}
-.settings-section li {
-  margin-bottom: 4px;
-  line-height: 1.35;
-}
-.side-panel ul,
-.side-panel ol {
-  list-style-type: disc;
-  list-style-position: inside;
-  margin: 0 0 8px 0;
-  padding-left: 0;
-}
-.side-panel li {
-  margin: 0 0 4px 0;
-  padding-left: 0;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-@media (max-width:900px) {
-  .controls-panel,
-  .state-visual-panel {
-    min-width: unset;
-    max-width: 100%;
-    width: 100%;
-  }
-  .panel-row {
-    flex-direction: column;
-  }
-  .state-visual-panel,
-  .side-panel {
-    width: 100%;
-  }
-}
+
 .controls button {
   padding: 18px 30px;
   font-size: 28px;
@@ -252,24 +93,31 @@
   background-color: #ffffff;
   color: #000000;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
   margin-bottom: 0;
   font-family: 'VT323', monospace;
 }
+
 .controls button:hover {
   background-color: #000000;
   color: #ffffff;
+  border-color: #ffffff;
 }
+
 .controls button:active {
   transform: translateY(1px);
 }
+
 .controls button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   background-color: #f5f5f5;
   color: #999999;
 }
-/* Mantido sem estilo específico para 3º botão (step removido) */
+
+/* ============================================
+   4. TELA DO EMULADOR
+   ============================================ */
 
 .screen {
   border: none;
@@ -298,7 +146,10 @@
   letter-spacing: 2px;
 }
 
-/* Informações abaixo da tela */
+/* ============================================
+   5. PAINEL DE INFORMAÇÕES
+   ============================================ */
+
 .info-panel {
   width: 100%;
   margin-top: 8px;
@@ -307,162 +158,359 @@
   border: none;
   color: #ffffff;
 }
+
 .info-panel h3 {
   margin: 0 0 8px 0;
   color: #ffffff;
   font-size: 1rem;
 }
+
 .info-panel ul {
   margin: 0;
   padding-left: 18px;
   color: #ffffff;
 }
+
 .info-panel li {
   margin-bottom: 6px;
   color: #ffffff;
 }
 
-/* Painel de registradores/informação CPU */
-.registers-panel {
-  background: #131c12;
-  border: 2px solid #008800;
-  border-radius: 7px;
-  margin-bottom: 10px;
-  padding: 10px 15px;
+/* ============================================
+   6. TOGGLE LIST (INFORMAÇÕES E CONTROLES)
+   ============================================ */
+
+.toggle-list {
   width: 100%;
-  box-shadow: 0 0 12px #014d07a0;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 2px solid #ffffff;
+  border-radius: 0;
+  overflow: visible;
 }
 
-.registers-panel h2 {
-  font-size: 1em;
-  color: #00ff70;
+.toggle-header {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  border-bottom: 2px solid #000000;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'VT323', monospace;
+  font-size: 1.5em;
+  transition: background-color 0.2s, color 0.2s;
+  text-align: left;
+}
+
+.toggle-list > .toggle-header:last-of-type {
+  border-bottom: none;
+}
+
+.toggle-header:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.toggle-header:active {
+  transform: translateY(0);
+}
+
+.toggle-icon {
+  font-size: 1.2em;
+  font-weight: bold;
+  user-select: none;
+  min-width: 20px;
+  text-align: center;
+}
+
+.toggle-content {
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #000000;
+  border-top: 2px solid #000000;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+.toggle-content ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #000000;
+}
+
+.toggle-content li {
   margin-bottom: 8px;
+  color: #000000;
+  font-family: 'VT323', monospace;
+  font-size: 1.3em;
 }
-.registers-row {
+
+.toggle-content li:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   6.1. CONFIGURAÇÕES
+   ============================================ */
+
+.config-option {
+  width: 100%;
+}
+
+.config-label {
   display: flex;
-  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.config-checkbox {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #000000;
+  border: 2px solid #000000;
+}
+
+.config-checkbox:hover {
+  accent-color: #333333;
+}
+
+.config-text {
+  flex: 1;
+  color: #000000;
+  font-family: 'VT323', monospace;
+  font-size: 1.3em;
+  line-height: 1.5;
+}
+
+.config-text strong {
+  display: block;
   margin-bottom: 4px;
-  font-size: 0.9em;
-  color: #d7ffd7;
-  overflow-wrap: anywhere;
-}
-.registers-row b {
-  color:#00dea6;
-}
-.registers-panel span {
-  margin-right: 11px;
-  font-family: 'Courier', monospace;
-  background: rgba(23,40,19,0.70);
-  padding: 0 3px;
-  border-radius: 2px;
-  display: inline-block;
+  font-size: 1.1em;
+  color: #000000;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .container {
-    padding: 10px;
-    gap: 10px;
-  }
-  
-  .header h1 {
-    font-size: 1.8em;
-  }
-  
-  .header p {
-    font-size: 0.9em;
-  }
-  
-  .controls {
-    flex-wrap: wrap;
-  }
-  
-  .controls button {
-    flex: 1;
-    min-width: 120px;
-  }
-  
-  .registers-panel {
-    padding: 12px 15px;
-  }
-  
-  .registers-row {
-    gap: 10px;
-    font-size: 0.95em;
-  }
-  
-  .screen {
-    padding: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 8px;
-  }
-  
-  .header h1 {
-    font-size: 1.5em;
-  }
-  
-  .registers-panel h2 {
-    font-size: 1em;
-  }
-  
-  .registers-row {
-    font-size: 0.85em;
-    gap: 8px;
-  }
-}
-
-.side-footer {
+.config-option .config-text {
+  flex: 1;
   display: flex;
-  justify-content: flex-end;
-  margin-top: auto;
-}
-.gh-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #00ff88;
-  background: #142016;
-  border: 1px solid #1f3b22;
-  border-radius: 6px;
-  width: 36px;
-  height: 36px;
-  text-decoration: none;
-}
-.gh-icon:hover {
-  color: #2be876;
-  background: #1a2a1d;
-  border-color: #2a7a3f;
+  flex-direction: column;
+  align-items: flex-start;
+  background: none;
+  border: none;
+  color: #000000;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
 }
 
-/* Floating GitHub icon in the viewport corner */
-.gh-float {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #111;
-  background: rgba(255,255,255,0.9);
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-  text-decoration: none;
-  z-index: 1001;
-}
-.gh-float:hover {
-  background: #ffffff;
-  border-color: #d9d9d9;
+.config-description {
+  display: none;
+  margin-top: 4px;
+  font-size: 0.95em;
+  color: #333333;
+  line-height: 1.4;
+  max-width: 100%;
 }
 
-/* Floating Debug button in the top right */
+.config-description.visible,
+.config-option.active .config-description {
+  display: block;
+}
+
+.config-wrapper {
+  position: relative;
+  border-top: 2px solid #000000;
+}
+
+.config-overlay {
+  position: absolute;
+  top: -14px;
+  right: 16px;
+  transform: translateY(-100%);
+  width: min(420px, 90vw);
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  padding: 20px 22px;
+  box-shadow: 8px 8px 0 #000000;
+  z-index: 50;
+  animation: configFloatIn 0.18s ease;
+}
+
+.config-overlay::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  right: 46px;
+  width: 14px;
+  height: 14px;
+  background-color: #ffffff;
+  border-left: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  transform: rotate(45deg);
+}
+
+.config-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-family: 'VT323', monospace;
+  font-size: 1.6em;
+  color: #000000;
+}
+
+.config-overlay-close {
+  background: none;
+  border: none;
+  color: #000000;
+  font-family: 'VT323', monospace;
+  font-size: 1.4em;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.config-overlay-close:hover {
+  color: #ffffff;
+  background-color: #000000;
+}
+
+.config-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@keyframes configFloatIn {
+  from {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 860px) {
+  .config-overlay {
+    position: fixed;
+    top: 70px;
+    right: 16px;
+    transform: none;
+    width: calc(100% - 32px);
+    max-width: 420px;
+  }
+
+  .config-overlay::after {
+    display: none;
+  }
+}
+
+.config-text small {
+  display: block;
+  font-size: 0.9em;
+  color: #333333;
+  line-height: 1.4;
+}
+
+/* ============================================
+   7. TABELA DE CONTROLES (ESTILO RETRO)
+   ============================================ */
+
+.controls-table-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.keyboard-grid,
+.chip8-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid-title {
+  color: #000000;
+  font-family: 'VT323', monospace;
+  font-size: 1.8em;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.retro-grid-table {
+  border-collapse: collapse;
+  border: 2px solid #ffffff;
+  background-color: #000000;
+  font-family: 'VT323', monospace;
+  font-size: 2em;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.retro-grid-table td {
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  background-color: #000000;
+  padding: 0;
+  font-weight: bold;
+}
+
+.arrow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.arrow {
+  color: #000000;
+  font-size: 3em;
+  font-weight: bold;
+  font-family: 'VT323', monospace;
+}
+
+/* ============================================
+   8. ELEMENTOS FLUTUANTES
+   ============================================ */
+
+/* Nota: O estilo do .gh-float está em index.css (componente compartilhado) */
+
+/* Botão de Debug */
 .debug-float {
   position: fixed;
   top: 10px;
@@ -482,15 +530,20 @@
   justify-content: center;
   gap: 8px;
 }
+
 .debug-float:hover {
   background-color: #000000;
   color: #ffffff;
 }
+
 .debug-float:active {
   transform: translateY(1px);
 }
 
-/* Seletor de ROMs - Menu Dropdown */
+/* ============================================
+   9. SELETOR DE ROMs
+   ============================================ */
+
 .rom-selector-menu {
   position: relative;
 }
@@ -530,84 +583,17 @@
   padding: 8px;
 }
 
-/* Seletor de ROMs - Aba Config */
-.rom-selector {
-  width: 100%;
-}
+/* ============================================
+   10. MODAL DE CONFIRMAÇÃO
+   ============================================ */
 
-.rom-selector h4 {
-  margin-bottom: 8px;
-  color: #00ff88;
-  font-size: 1em;
-}
-
-.rom-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 300px;
-  overflow-y: auto;
-  margin-bottom: 8px;
-}
-
-.rom-item {
-  padding: 8px 12px;
-  background: #142016;
-  border: 1px solid #1f3b22;
-  color: #b8f5cf;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85em;
-  text-align: left;
-  transition: all 0.2s ease;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.rom-item:hover {
-  background: #1a2a1d;
-  border-color: #2a7a3f;
-  color: #00ff88;
-}
-
-.rom-item.active {
-  background: #1e3d25;
-  border-color: #2a7a3f;
-  color: #00ff88;
-  font-weight: bold;
-}
-
-.rom-item:active {
-  transform: scale(0.98);
-}
-
-.rom-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.rom-list::-webkit-scrollbar-track {
-  background: #0e180f;
-  border-radius: 3px;
-}
-
-.rom-list::-webkit-scrollbar-thumb {
-  background: #2a7a3f;
-  border-radius: 3px;
-}
-
-.rom-list::-webkit-scrollbar-thumb:hover {
-  background: #3fb05a;
-}
-
-/* Modal de confirmação */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -625,14 +611,13 @@
 }
 
 .modal-content {
-  background: linear-gradient(135deg, #1a2a1d 0%, #0d1f12 100%);
-  border: 2px solid #2a7a3f;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 0;
   padding: 0;
-  max-width: 450px;
-  width: 90%;
-  box-shadow: 0 0 30px rgba(0, 255, 100, 0.3), inset 0 0 20px rgba(0, 255, 100, 0.1);
-  animation: slideIn 0.3s ease;
+  max-width: 520px;
+  width: 92%;
+  animation: slideIn 0.2s ease;
   overflow: hidden;
 }
 
@@ -648,32 +633,31 @@
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #1e3d25 0%, #142016 100%);
-  border-bottom: 2px solid #2a7a3f;
-  padding: 20px 24px;
+  background: #ffffff;
+  border-bottom: 2px solid #000000;
+  padding: 16px 20px;
   text-align: center;
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #00ff88;
-  font-size: 1.4em;
-  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-  font-family: 'Courier New', monospace;
+  color: #000000;
+  font-size: 2.2em;
+  font-family: 'VT323', monospace;
   letter-spacing: 1px;
 }
 
 .modal-body {
-  padding: 24px;
-  color: #d7ffd7;
-  font-family: 'Courier New', monospace;
+  padding: 18px 20px;
+  color: #000000;
+  font-family: 'VT323', monospace;
   line-height: 1.6;
 }
 
 .modal-body p {
-  margin: 0 0 12px 0;
-  font-size: 1em;
-  color: #b8f5cf;
+  margin: 0 0 10px 0;
+  font-size: 1.5em;
+  color: #000000;
 }
 
 .modal-body p:last-of-type {
@@ -681,51 +665,46 @@
 }
 
 .modal-body strong {
-  color: #00ff88;
+  color: #000000;
   font-weight: bold;
 }
 
 .modal-question {
-  margin-top: 16px !important;
-  font-size: 1.1em !important;
-  color: #00ff88 !important;
+  margin-top: 10px !important;
+  font-size: 1.7em !important;
+  color: #000000 !important;
   font-weight: bold;
   text-align: center;
-  text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
 }
 
 .modal-footer {
-  background: linear-gradient(135deg, #142016 0%, #0e180f 100%);
-  border-top: 2px solid #1f3b22;
-  padding: 16px 24px;
+  background: #ffffff;
+  border-top: 2px solid #000000;
+  padding: 12px 16px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
 }
 
 .modal-btn {
-  padding: 10px 24px;
-  font-size: 1em;
-  border: 2px solid;
-  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 20px;
+  border: 2px solid #000000;
+  border-radius: 0;
   cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  transition: all 0.2s ease;
-  min-width: 100px;
+  font-family: 'VT323', monospace;
+  transition: background-color 0.2s, color 0.2s;
+  min-width: 120px;
 }
 
 .modal-btn-cancel {
-  background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
-  border-color: #555;
-  color: #fff;
+  background: #ffffff;
+  color: #000000;
 }
 
 .modal-btn-cancel:hover {
-  background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
-  border-color: #666;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #000000;
+  color: #ffffff;
 }
 
 .modal-btn-cancel:active {
@@ -733,18 +712,58 @@
 }
 
 .modal-btn-confirm {
-  background: linear-gradient(135deg, #20c55e 0%, #17994a 100%);
-  border-color: #2a7a3f;
-  color: #001a08;
+  background: #ffffff;
+  color: #000000;
 }
 
 .modal-btn-confirm:hover {
-  background: linear-gradient(135deg, #2be876 0%, #1fb05a 100%);
-  border-color: #3fb05a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(32, 197, 94, 0.4);
+  background: #000000;
+  color: #ffffff;
 }
 
 .modal-btn-confirm:active {
   transform: translateY(0);
+}
+
+/* ============================================
+   11. RESPONSIVIDADE
+   ============================================ */
+
+@media (max-width: 900px) {
+  .controls-panel,
+  .state-visual-panel {
+    min-width: unset;
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .panel-row {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .controls {
+    flex-wrap: wrap;
+  }
+  
+  .controls button {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .screen {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 8px;
+  }
 }

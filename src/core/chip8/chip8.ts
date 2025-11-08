@@ -1,4 +1,4 @@
-import { CPU } from "./CPU";
+import { CPU, type Chip8Quirks } from "./CPU";
 import { Display } from "./Display";
 import { Keyboard } from "./Keyboard";
 import { Memory } from "./Memory";
@@ -16,7 +16,6 @@ export class Chip8 {
         this.cpu = new CPU(this.memory, this.display, this.keyboard);
     }
 
-    // debugar a memória
     debugMemory() {
         return `memória: ${this.memory.getByte(0x200)}\n`;
     }
@@ -51,5 +50,53 @@ export class Chip8 {
 
     getCPUState() {
         return this.cpu.getState();
+    }
+
+    setMemoryIncrementMode(enabled: boolean) {
+        this.cpu.setMemoryIncrementMode(enabled);
+    }
+
+    getMemoryIncrementMode(): boolean {
+        return this.cpu.getMemoryIncrementMode();
+    }
+
+    setShiftMode(enabled: boolean) {
+        this.cpu.setShiftMode(enabled);
+    }
+
+    getShiftMode(): boolean {
+        return this.cpu.getShiftMode();
+    }
+
+    setClippingMode(enabled: boolean) {
+        this.cpu.setClippingMode(enabled);
+    }
+
+    getClippingMode(): boolean {
+        return this.cpu.getClippingMode();
+    }
+
+    getQuirks(): Chip8Quirks {
+        return this.cpu.getQuirks();
+    }
+
+    updateQuirks(partial: Partial<Chip8Quirks>) {
+        this.cpu.updateQuirks(partial);
+    }
+
+    setVfResetMode(enabled: boolean) {
+        this.cpu.setVfResetMode(enabled);
+    }
+
+    getVfResetMode(): boolean {
+        return this.cpu.getVfResetMode();
+    }
+
+    setJumpWithVxMode(enabled: boolean) {
+        this.cpu.setJumpWithVxMode(enabled);
+    }
+
+    getJumpWithVxMode(): boolean {
+        return this.cpu.getJumpWithVxMode();
     }
 }
