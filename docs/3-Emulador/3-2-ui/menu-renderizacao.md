@@ -94,6 +94,8 @@ O loop só executa se houver uma ROM carregada, se o emulador estiver rodando e 
 
 Usamos `requestAnimationFrame` para agendar o próximo frame. Isso garante que o loop seja executado na taxa de atualização do navegador, geralmente 60 FPS, otimizando o uso de recursos. Quando o componente é desmontado ou as condições mudam, cancelamos o frame pendente através de `cancelAnimationFrame`.
 
+Optamos por `requestAnimationFrame` em vez de `setInterval` porque ele já sincroniza o callback com o refresh do navegador, evita drift acumulado de intervalos de 16ms e é automaticamente desacelerado em abas em segundo plano. O controle fino do clock de 60Hz fica no `Date.now()` dentro do loop, garantindo que a tela só seja redesenhada quando o tempo mínimo (≈16,67ms) tiver passado.
+
 Se ocorrer um erro durante a execução, capturamos ele no bloco `try-catch`, logamos no console e pausamos o emulador automaticamente. Isso evita que o emulador trave completamente se algo der errado.
 
 Quando uma ROM é carregada, queremos renderizar a tela imediatamente para que o usuário veja o estado inicial do display:

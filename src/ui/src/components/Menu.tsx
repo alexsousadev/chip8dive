@@ -24,6 +24,7 @@ const Menu = () => {
   const [configToggleOpen, setConfigToggleOpen] = useState(false);
   const chipRef = useRef(new Chip8());
   const chip = chipRef.current;
+  const currentRomRef = useRef<Uint8Array | null>(null);
   const [memoryIncrementMode, setMemoryIncrementMode] = useState(chip.getMemoryIncrementMode());
   const [shiftMode, setShiftMode] = useState(chip.getShiftMode());
   const [clippingMode, setClippingMode] = useState(chip.getClippingMode());
@@ -193,6 +194,7 @@ const Menu = () => {
         const result = event.target?.result;
         if (result instanceof ArrayBuffer) {
           const romData = new Uint8Array(result);
+          currentRomRef.current = romData;
           chip.loadROM(romData);
           chip.resumeAudio();
           setRomLoaded(true);
@@ -255,6 +257,7 @@ const Menu = () => {
       // Carrega automaticamente a primeira ROM da pasta
       if (romFiles.length > 0) {
         const firstRom = romFiles[0];
+        currentRomRef.current = firstRom.data;
         chip.loadROM(firstRom.data);
         chip.resumeAudio();
         setRomLoaded(true);
@@ -267,6 +270,7 @@ const Menu = () => {
   const loadRomFromList = (index: number) => {
     if (index >= 0 && index < loadedRoms.length) {
       const romFile = loadedRoms[index];
+      currentRomRef.current = romFile.data;
       chip.loadROM(romFile.data);
       chip.resumeAudio();
       setRomLoaded(true);
@@ -308,6 +312,27 @@ const Menu = () => {
     setRomLoaded(false);
     setSelectedRomIndex(null);
     
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, 640, 320);
+      }
+    }
+  };
+
+  const restartCurrentGame = () => {
+    if (!romLoaded || !currentRomRef.current) {
+      return;
+    }
+
+    setIsRunning(false);
+    setDebugMode(false);
+    chip.reset();
+    chip.loadROM(currentRomRef.current);
+    chip.resumeAudio();
+    setIsRunning(true);
+
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -413,7 +438,7 @@ const Menu = () => {
                 <button onClick={toggleExecution} disabled={debugMode}>
                   {isRunning ? <> <FaPause /> Pausar </> : <> <FaPlay /> Continuar </>}
                 </button>
-                <button onClick={resetEmulator}> <RiResetLeftFill /> Reset</button>
+                <button onClick={restartCurrentGame}> <RiResetLeftFill /> Reset</button>
                 {debugMode && (
                   <button onClick={stepDebug}> <VscDebugStepOver /> Step</button>
                 )}
