@@ -2,8 +2,13 @@
   "name": "chip8dive",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm install && cd src/ui && npm run build",
     "start": "cd src/ui && npm run dev"
   },
   "keywords": [],
