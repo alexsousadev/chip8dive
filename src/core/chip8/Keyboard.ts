@@ -2,7 +2,7 @@ export class Keyboard {
     private keys: Map<string, number>;
     private keysState: Map<number, boolean>;
     private historyOfKeysPressed: string[] = []; // Histórico de teclas pressionadas
-    private keyPressTimers: Map<string, NodeJS.Timeout> = new Map(); // Timers para delay das teclas
+    private keyPressTimers: Map<string, number> = new Map(); // Timers para delay das teclas
     private keyPressDelay: number = 200; // Delay em ms antes de adicionar ao histórico
     private keyPressReleaseCycle: Map<string, boolean> = new Map(); // Rastrear ciclo pressionar->soltar
     
@@ -39,12 +39,12 @@ export class Keyboard {
                     clearTimeout(this.keyPressTimers.get(key)!);
                 }
                 
-                const timer = setTimeout(() => {
+                const timer: any = setTimeout(() => {
                     this.addKeyToHistory(key);
                     this.keyPressTimers.delete(key);
                 }, this.keyPressDelay);
-                
-                this.keyPressTimers.set(key, timer);
+
+                this.keyPressTimers.set(key, timer as number);
             } else {
                 // Tecla solta: marca ciclo completo para Fx0A
                 this.keyPressReleaseCycle.set(key, true);

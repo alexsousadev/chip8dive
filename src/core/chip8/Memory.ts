@@ -37,7 +37,7 @@ export class Memory {
             this.RAM[0x050 + i] = this.fonts[i];
     }
 
-    loadROMInRAM(romContent: Buffer) {
+    loadROMInRAM(romContent: Uint8Array) {
         this.loadFontsInRAM();
 
         for (let i = 0; i < romContent.length; i++) {

@@ -17,7 +17,7 @@ export class Chip8 {
     }
 
     loadROM(romContent: Uint8Array) {
-        this.memory.loadROMInRAM(romContent as Buffer);
+        this.memory.loadROMInRAM(romContent as Uint8Array);
     }
 
     start() {
