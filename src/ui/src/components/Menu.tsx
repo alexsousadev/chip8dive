@@ -478,6 +478,8 @@ const Menu = () => {
                   <ul>
                     <li>O emulador aceita ROMs no formato .ch8 ou arquivos binários sem extensão</li>
                     <li>Se você não estiver ouvindo nenhum som durante a execução dos jogos, verifique se o seu navegador está permitindo a reprodução de áudio</li>
+                    <li>Você pode obter ROMs em Domínio Público em sites como <a href="https://www.zophar.net/pdroms/chip8.html" target="_blank" rel="noopener noreferrer">Zophar's Domain</a></li>
+                  
                   </ul>
                 </div>
               )}
