@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { FaFileUpload, FaPause, FaPlay, FaFolderOpen } from "react-icons/fa";
+import { FaFileUpload, FaFolderOpen, FaPause, FaPlay } from "react-icons/fa";
 import { RiResetLeftFill } from "react-icons/ri";
 import { VscDebug, VscDebugStepOver } from "react-icons/vsc";
 import { Chip8 } from "../../../core/chip8/chip8";
@@ -11,12 +11,21 @@ interface RomFile {
   data: Uint8Array;
 }
 
+const PRELOADED_ROMS_BASE_PATH = "/roms";
+const PRELOADED_ROMS: Array<{ name: string; fileName: string }> = [
+  { name: "Pong (1 player)", fileName: "Pong (1 player).ch8" },
+  { name: "Space Invaders", fileName: "Space Invaders" },
+  { name: "Outlaw", fileName: "outlaw.ch8" },
+];
+
 const Menu = () => {
   const [romLoaded, setRomLoaded] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
-  const [loadedRoms, setLoadedRoms] = useState<RomFile[]>([]);
+  const [preloadedRoms, setPreloadedRoms] = useState<RomFile[]>([]);
+  const [folderRoms, setFolderRoms] = useState<RomFile[]>([]);
   const [selectedRomIndex, setSelectedRomIndex] = useState<number | null>(null);
+  const [preloadedRomsLoading, setPreloadedRomsLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingRomIndex, setPendingRomIndex] = useState<number | null>(null);
   const [infoToggleOpen, setInfoToggleOpen] = useState(false);
@@ -41,6 +50,9 @@ const Menu = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   
+  // Se houver ROMs na pasta, mostra as ROMs da pasta, caso contrário, mostra as ROMs pré-carregadas  
+  const visibleRoms = folderRoms.length > 0 ? folderRoms : preloadedRoms;
+
 
   // Renderiza o display CHIP-8 no canvas: cada pixel 64x32 é desenhado como 10x10
   const renderScreen = useCallback(() => {
@@ -177,99 +189,57 @@ const Menu = () => {
     setJumpWithVxMode(event.target.checked);
   };
 
+  const fetchRom = useCallback(async (fileName: string) => {
+    // Carrega ROMs pré-carregadas do diretório /roms
+    const url = `${PRELOADED_ROMS_BASE_PATH}/${encodeURIComponent(fileName)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Falha ao carregar ROM (${res.status}): ${url}`);
+    }
+    const buf = await res.arrayBuffer();
+    return new Uint8Array(buf);
+  }, []);
 
-  const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const file = event.target.files[0];
-      
-      // Valida se o arquivo é uma ROM válida
-      if (!isValidRomFile(file.name)) {
-        alert('Por favor, selecione um arquivo ROM válido (.ch8 ou binário sem extensão).');
-        return;
-      }
-      
-      const reader = new FileReader();
+  useEffect(() => {
+    let cancelled = false;
 
-      reader.onloadend = (event) => {
-        const result = event.target?.result;
-        if (result instanceof ArrayBuffer) {
-          const romData = new Uint8Array(result);
-          currentRomRef.current = romData;
-          chip.loadROM(romData);
-          chip.resumeAudio();
-          setRomLoaded(true);
-          setIsRunning(true);
+    (async () => {
+      try {
+        const results = await Promise.allSettled(
+          PRELOADED_ROMS.map(async (rom) => ({
+            name: rom.name,
+            data: await fetchRom(rom.fileName),
+          })),
+        );
+
+        if (cancelled) return;
+
+        const ok = results
+          .filter((r): r is PromiseFulfilledResult<RomFile> => r.status === "fulfilled")
+          .map((r) => r.value);
+
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length > 0) {
+          console.warn("Algumas ROMs pré-carregadas falharam ao carregar:", failed);
         }
-      };
 
-      reader.readAsArrayBuffer(file);
-    }
-  };
-
-  const triggerFileDialog = () => {
-    fileInputRef.current?.click();
-  };
-
-  const triggerFolderDialog = () => {
-    folderInputRef.current?.click();
-  };
-
-  const isValidRomFile = (fileName: string): boolean => {
-    const lowerName = fileName.toLowerCase();
-    // Aceita arquivos .ch8 ou arquivos binários sem extensão
-    return lowerName.endsWith('.ch8') || !lowerName.includes('.');
-  };
-
-  const handleFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files).filter(file => 
-        isValidRomFile(file.name)
-      );
-
-      if (files.length === 0) {
-        alert('Nenhum arquivo ROM (.ch8 ou binário sem extensão) encontrado na pasta selecionada.');
-        return;
+        setPreloadedRoms(ok);
+      } catch (err) {
+        console.error("Erro ao pré-carregar ROMs:", err);
+        setPreloadedRoms([]);
+      } finally {
+        if (!cancelled) setPreloadedRomsLoading(false);
       }
+    })();
 
-      const romFiles: RomFile[] = [];
-
-      for (const file of files) {
-        const reader = new FileReader();
-        const romFile = await new Promise<RomFile>((resolve, reject) => {
-          reader.onloadend = (e) => {
-            const result = e.target?.result;
-            if (result instanceof ArrayBuffer) {
-              resolve({
-                name: file.name,
-                data: new Uint8Array(result)
-              });
-            } else {
-              reject(new Error('Erro ao ler arquivo'));
-            }
-          };
-          reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-          reader.readAsArrayBuffer(file);
-        });
-        romFiles.push(romFile);
-      }
-
-      setLoadedRoms(romFiles);
-      // Carrega automaticamente a primeira ROM da pasta
-      if (romFiles.length > 0) {
-        const firstRom = romFiles[0];
-        currentRomRef.current = firstRom.data;
-        chip.loadROM(firstRom.data);
-        chip.resumeAudio();
-        setRomLoaded(true);
-        setIsRunning(true);
-        setSelectedRomIndex(0);
-      }
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchRom]);
 
   const loadRomFromList = (index: number) => {
-    if (index >= 0 && index < loadedRoms.length) {
-      const romFile = loadedRoms[index];
+    if (index >= 0 && index < visibleRoms.length) {
+      const romFile = visibleRoms[index];
       currentRomRef.current = romFile.data;
       chip.loadROM(romFile.data);
       chip.resumeAudio();
@@ -319,6 +289,100 @@ const Menu = () => {
         ctx.clearRect(0, 0, 640, 320);
       }
     }
+  };
+
+  const triggerFileDialog = () => {
+    fileInputRef.current?.click();
+  };
+
+  const triggerFolderDialog = () => {
+    folderInputRef.current?.click();
+  };
+
+  const isValidRomFile = (fileName: string): boolean => {
+    const lowerName = fileName.toLowerCase();
+    // Aceita arquivos .ch8 ou arquivos binários sem extensão
+    return lowerName.endsWith(".ch8") || !lowerName.includes(".");
+  };
+
+  const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) return;
+
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = (e) => {
+      const result = e.target?.result;
+      if (!(result instanceof ArrayBuffer)) return;
+
+      const romData = new Uint8Array(result);
+      resetEmulator();
+      currentRomRef.current = romData;
+      chip.loadROM(romData);
+      chip.resumeAudio();
+      setRomLoaded(true);
+      setIsRunning(true);
+      setSelectedRomIndex(null);
+
+      // permite re-selecionar o mesmo arquivo e disparar onChange
+      event.target.value = "";
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+
+    const files = Array.from(event.target.files).filter((file) => isValidRomFile(file.name));
+    if (files.length === 0) {
+      alert("Nenhum arquivo ROM (.ch8 ou binário sem extensão) encontrado na pasta selecionada.");
+      return;
+    }
+
+    const romFiles: RomFile[] = [];
+
+    for (const file of files) {
+      const reader = new FileReader();
+      const romFile = await new Promise<RomFile>((resolve, reject) => {
+        reader.onloadend = (e) => {
+          const result = e.target?.result;
+          if (result instanceof ArrayBuffer) {
+            resolve({
+              name: file.name,
+              data: new Uint8Array(result),
+            });
+          } else {
+            reject(new Error("Erro ao ler arquivo"));
+          }
+        };
+        reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
+        reader.readAsArrayBuffer(file);
+      });
+      romFiles.push(romFile);
+    }
+
+    // Carrega automaticamente a primeira ROM da pasta
+    const firstRom = romFiles[0];
+    if (romFiles.length > 0) {
+      resetEmulator();
+      currentRomRef.current = firstRom.data;
+      chip.loadROM(firstRom.data);
+      chip.resumeAudio();
+      setRomLoaded(true);
+      setIsRunning(true);
+    }
+
+    const uniqueByName = new Map<string, RomFile>();
+    for (const r of romFiles) uniqueByName.set(r.name, r);
+    const nextFolderRoms = Array.from(uniqueByName.values());
+    setFolderRoms(nextFolderRoms);
+
+    const idx = nextFolderRoms.findIndex((r) => r.name === firstRom.name);
+    setSelectedRomIndex(idx >= 0 ? idx : null);
+
+    // Permite re-selecionar a mesma pasta e disparar onChange
+    event.target.value = "";
   };
 
   const restartCurrentGame = () => {
@@ -389,50 +453,62 @@ const Menu = () => {
       )}
       <div className="controls-panel">
         <div className="header">
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFile}
-            style={{ display: 'none' }}
-          />
-          <input
-            ref={folderInputRef}
-            type="file"
-            onChange={handleFolder}
-            // @ts-ignore - webkitdirectory não está nas definições de tipo do React
-            webkitdirectory=""
-            style={{ display: 'none' }}
-          />
           <div className="controls">
-            <button onClick={triggerFileDialog}> <FaFileUpload /> Carregar ROM</button>
-            <button onClick={triggerFolderDialog}> <FaFolderOpen /> Carregar Pasta</button>
-            {loadedRoms.length > 0 && (
-              <div className="rom-selector-menu">
-                <select
-                  className="rom-select"
-                  value={selectedRomIndex !== null ? selectedRomIndex : ''}
-                  onChange={(e) => {
-                    const index = parseInt(e.target.value);
-                    if (isNaN(index)) return;
-                    if (index === selectedRomIndex) return;
-                    // Se em execução, pede confirmação antes de trocar ROM
-                    if (isRunning) {
-                      setPendingRomIndex(index);
-                      setShowConfirmModal(true);
-                    } else {
-                      loadRomFromList(index);
-                    }
-                  }}
-                >
-                  <option value="">Selecione uma ROM...</option>
-                  {loadedRoms.map((rom, index) => (
-                    <option key={index} value={index}>
-                      {rom.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFile}
+              style={{ display: "none" }}
+            />
+            <input
+              ref={folderInputRef}
+              type="file"
+              onChange={handleFolder}
+              style={{ display: "none" }}
+              {...({ webkitdirectory: "" } as unknown as React.InputHTMLAttributes<HTMLInputElement>)}
+            />
+            <button onClick={triggerFileDialog}>
+              {" "}
+              <FaFileUpload /> Carregar ROM
+            </button>
+            <button onClick={triggerFolderDialog}>
+              {" "}
+              <FaFolderOpen /> Carregar Pasta
+            </button>
+            <div className="rom-selector-menu">
+              <select
+                className="rom-select"
+                value={selectedRomIndex !== null ? selectedRomIndex : ""}
+                disabled={
+                  (folderRoms.length === 0 && preloadedRomsLoading) || visibleRoms.length === 0
+                }
+                onChange={(e) => {
+                  const index = parseInt(e.target.value);
+                  if (isNaN(index)) return;
+                  if (index === selectedRomIndex) return;
+                  // Se em execução, pede confirmação antes de trocar ROM
+                  if (isRunning) {
+                    setPendingRomIndex(index);
+                    setShowConfirmModal(true);
+                  } else {
+                    loadRomFromList(index);
+                  }
+                }}
+              >
+                <option value="">
+                  {folderRoms.length === 0 && preloadedRomsLoading
+                    ? "Carregando ROMs..."
+                    : visibleRoms.length === 0
+                      ? "Nenhuma ROM encontrada"
+                      : "Selecione uma ROM..."}
+                </option>
+                {visibleRoms.map((rom, index) => (
+                  <option key={rom.name} value={index}>
+                    {rom.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             {romLoaded && (
               <>
                 <button onClick={toggleExecution} disabled={debugMode}>
